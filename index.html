@@ -1,1358 +1,1652 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-HK">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>港鐵全線跨線轉乘看板 | MTR Live & Transfer</title>
-    <style>
-        :root {
-            --bg-color: #111214;
-            --card-bg: #1c1d21;
-            --input-bg: #282a30;
-            --border-color: #363942;
-            --text-main: #ffffff;
-            --text-sub: #a0a5b1;
-            --accent: #ffcc00;
-            --green: #34c759;
-            --red: #ff3b30;
-            --orange: #ff9500;
-            --font-scale: 1;
-        }
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; }
-        html, body { width: 100%; max-width: 100%; overflow-x: hidden; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main); }
-        body { padding: 12px; padding-bottom: 45px; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>田徑賽事時間表製作器 | Athletics Competition Timetable Maker</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-        .header { background: linear-gradient(135deg, #005596, #003b6f); padding: 14px 16px; border-radius: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-        .header-left { flex: 1; min-width: 0; }
-        .header h1 { margin: 0; font-size: calc(17px * var(--font-scale, 1)); letter-spacing: 0.3px; white-space: normal; word-break: break-word; line-height: 1.25; }
-        .header p { margin: 4px 0 0; font-size: calc(11px * var(--font-scale, 1)); color: #d0e4f7; }
-        .lang-btn { background: rgba(255,255,255,0.18); color: white; border: 1px solid rgba(255,255,255,0.35); padding: 7px 12px; border-radius: 20px; font-size: calc(12px * var(--font-scale, 1)); font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-        .lang-btn:active { background: rgba(255,255,255,0.3); }
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    }
 
-        .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .font-slider-box {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(0,0,0,0.28);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 20px;
-            padding: 5px 10px;
-        }
-        .font-a-small { font-size: 11px; font-weight: 800; color: #d0e4f7; line-height: 1; user-select: none; }
-        .font-a-large { font-size: 16px; font-weight: 800; color: #ffffff; line-height: 1; user-select: none; }
-        .font-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 68px;
-            height: 6px;
-            border-radius: 99px;
-            background: linear-gradient(to right, #ffffff 0%, #ffffff 33%, rgba(255,255,255,0.25) 33%, rgba(255,255,255,0.25) 100%);
-            outline: none;
-            cursor: pointer;
-            margin: 0;
-        }
-        .font-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 2px solid #005596;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.45);
-            cursor: pointer;
-        }
-        .font-slider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 2px solid #005596;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.45);
-            cursor: pointer;
-        }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
 
+    /* Timetable Grid Precision Styling */
+    .timetable-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-variant-numeric: tabular-nums;
+    }
+    .timetable-table th,
+    .timetable-table td {
+      border: 1px solid #475569;
+      padding: 3px 4px;
+      vertical-align: middle;
+    }
+    .timetable-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
 
-        .card { background: var(--card-bg); border-radius: 14px; padding: 14px; margin-bottom: 12px; border: 1px solid #262830; width: 100%; }
+    /* Event Badge Hover & Highlight */
+    .event-chip {
+      transition: all 0.15s ease;
+    }
+    .event-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.14);
+    }
 
-        /* Presets */
-        .presets-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
-        .presets-title { font-size: calc(12px * var(--font-scale, 1)); font-weight: bold; color: var(--accent); flex: 1; min-width: 0; }
-        .save-btn { background: var(--green); color: #000; border: none; border-radius: 14px; padding: 5px 11px; font-size: calc(11px * var(--font-scale, 1)); font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-        .save-btn:active { opacity: 0.8; }
-        .preset-list { display: flex; flex-wrap: wrap; gap: 7px; }
-        .preset-chip { display: inline-flex; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 5px 10px; font-size: calc(12px * var(--font-scale, 1)); color: var(--text-main); cursor: pointer; max-width: 100%; }
-        .preset-chip.active { border-color: var(--accent); background: rgba(255, 204, 0, 0.15); color: var(--accent); font-weight: bold; }
-        .preset-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .preset-del { margin-left: 7px; color: #ff6b6b; font-weight: bold; font-size: calc(14px * var(--font-scale, 1)); line-height: 1; padding: 0 2px; flex-shrink: 0; }
-
-        /* Selectors - Fixed responsive layout so English text never overflows */
-        .station-box { margin-bottom: 10px; width: 100%; }
-        .station-box:last-of-type { margin-bottom: 0; }
-        .box-label { font-size: calc(12px * var(--font-scale, 1)); color: var(--text-sub); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-weight: 600; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-        .select-row { display: flex; gap: 8px; width: 100%; }
-        .select-wrap { position: relative; min-width: 0; }
-        .select-wrap.line-col { flex: 1.15; }
-        .select-wrap.sta-col { flex: 1; }
-        select {
-            width: 100%;
-            min-width: 0;
-            max-width: 100%;
-            padding: 10px 26px 10px 10px;
-            font-size: calc(13px * var(--font-scale, 1));
-            font-weight: 600;
-            background: var(--input-bg);
-            color: white;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            appearance: none;
-            -webkit-appearance: none;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .select-wrap::after {
-            content: "▾";
-            position: absolute;
-            right: 9px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-sub);
-            font-size: calc(12px * var(--font-scale, 1));
-            pointer-events: none;
-        }
-
-        .swap-row { display: flex; justify-content: center; margin: 10px 0; }
-        .swap-btn { background: var(--input-bg); color: var(--accent); border: 1px solid var(--border-color); border-radius: 20px; padding: 6px 16px; font-size: calc(12px * var(--font-scale, 1)); font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .swap-btn:active { background: #363942; }
-
-        .summary-bar { display: flex; justify-content: space-between; align-items: center; background: #16171a; padding: 10px 12px; border-radius: 10px; margin-top: 12px; font-size: calc(12px * var(--font-scale, 1)); font-weight: bold; color: var(--accent); gap: 6px; text-align: center; }
-
-        /* First & Last Train Banner inside Segment */
-        .first-last-box {
-            background: #15161a;
-            border: 1px solid #2a2d36;
-            border-radius: 10px;
-            padding: 9px 11px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            font-size: calc(11px * var(--font-scale, 1));
-        }
-        .fl-item { flex: 1; min-width: 0; }
-        .fl-label { color: var(--text-sub); margin-bottom: 2px; font-size: calc(10px * var(--font-scale, 1)); }
-        .fl-val { color: #e5e7eb; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .fl-val.first { color: #60a5fa; }
-        .fl-val.last { color: #f59e0b; }
-
-        /* Segment Card */
-        .seg-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #2b2d35; }
-        .seg-title { font-size: calc(15px * var(--font-scale, 1)); font-weight: bold; flex: 1; min-width: 0; word-break: break-word; }
-        .line-pill { padding: 4px 9px; border-radius: 8px; font-size: calc(11px * var(--font-scale, 1)); font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5); white-space: nowrap; flex-shrink: 0; }
-
-        .train-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid #25272e; }
-        .train-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .train-left { flex: 1; min-width: 0; }
-        .train-dest { font-size: calc(14px * var(--font-scale, 1)); font-weight: bold; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
-        .train-sub { font-size: calc(11px * var(--font-scale, 1)); color: var(--text-sub); margin-top: 3px; }
-        .train-right { text-align: right; flex-shrink: 0; }
-        .ttnt-val { font-size: calc(15px * var(--font-scale, 1)); font-weight: bold; color: var(--green); }
-        .ttnt-soon { color: var(--red); animation: blink 1.2s infinite; }
-        .eta-val { font-size: calc(11px * var(--font-scale, 1)); color: var(--accent); margin-top: 2px; }
-
-        .badge-catch { background: rgba(52, 199, 89, 0.2); color: #34c759; border: 1px solid #34c759; font-size: calc(10px * var(--font-scale, 1)); padding: 1px 5px; border-radius: 5px; }
-        .badge-warn { background: rgba(255, 149, 0, 0.2); color: #ff9500; border: 1px solid #ff9500; font-size: calc(10px * var(--font-scale, 1)); padding: 1px 5px; border-radius: 5px; }
-
-        .transfer-divider { display: flex; align-items: center; justify-content: center; margin: 4px 0 12px; }
-        .transfer-pill { background: #282a30; border: 1px dashed var(--accent); color: var(--accent); padding: 7px 14px; border-radius: 20px; font-size: calc(12px * var(--font-scale, 1)); font-weight: bold; text-align: center; }
-
-        .footer-note { text-align: center; font-size: calc(11px * var(--font-scale, 1)); color: var(--text-sub); margin-top: 12px; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
-    </style>
+    /* Print Styles: Hide Sidebar & Controls, Format Cleanly for A4 Landscape/Portrait */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      #sidebar-panel,
+      #top-utility-bar,
+      #toast-container,
+      #modal-backdrop,
+      .no-print {
+        display: none !important;
+      }
+      #main-workspace {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      #preview-scroll-container {
+        overflow: visible !important;
+        padding: 0 !important;
+        height: auto !important;
+      }
+      #timetable-sheet {
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .timetable-table th,
+      .timetable-table td {
+        border: 1px solid #1e293b !important;
+        font-size: 9px !important;
+        padding: 2px 3px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .timetable-table thead th {
+        position: static !important;
+      }
+      .event-chip {
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+        padding: 1px 0 !important;
+        color: #000 !important;
+      }
+      .event-type-dot {
+        display: none !important;
+      }
+    }
+  </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden select-none sm:select-auto">
 
-    <div class="header">
-        <div class="header-left">
-            <h1 id="uiTitle">🚇 港鐵全線跨線轉乘看板</h1>
-            <p id="lastUpdate">正在連線港鐵伺服器...</p>
-        </div>
-        <div class="header-actions">
-            <div class="font-slider-box" title="字體大小 / Font Size">
-                <span class="font-a-small">A</span>
-                <input type="range" id="fontSlider" class="font-slider" min="0.9" max="1.45" step="0.05" value="1" aria-label="字體大小滑桿">
-                <span class="font-a-large">A</span>
-            </div>
-            <button class="lang-btn" id="langBtn">Eng</button>
-        </div>
+  <!-- Top Compact Utility Header -->
+  <header id="top-utility-bar" class="bg-slate-900 text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 shrink-0 z-20">
+    <div class="flex items-center gap-2.5">
+      <button id="mobile-sidebar-toggle" class="lg:hidden p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200" title="切換工具欄">
+        <i data-lucide="panel-left" class="w-5 h-5"></i>
+      </button>
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-indigo-600 flex items-center justify-center shadow-md">
+        <i data-lucide="timer" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-sm sm:text-base font-bold tracking-tight leading-tight flex items-center gap-2">
+          田徑賽事時間表製作器
+          <span class="hidden sm:inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">Athletics Timetable Studio</span>
+        </h1>
+      </div>
     </div>
 
-    <!-- Preset Routes Card -->
-    <div class="card">
-        <div class="presets-header">
-            <span class="presets-title" id="uiPresetTitle">⭐ 預設常用路線 (點擊一鍵查詢)</span>
-            <button class="save-btn" id="savePresetBtn">+ 儲存目前路線</button>
-        </div>
-        <div class="preset-list" id="presetList"></div>
+    <!-- Day Switcher Tabs & Quick Actions -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700" id="day-tabs-container">
+        <!-- Populated dynamically -->
+      </div>
+      <button onclick="addNewDay()" class="px-2 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1 transition" title="新增賽程日">
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        <span class="hidden md:inline">新增日數</span>
+      </button>
+
+      <div class="h-5 w-px bg-slate-700 mx-0.5 hidden sm:block"></div>
+
+      <!-- View Mode Toggle -->
+      <button id="view-mode-btn" onclick="toggleRowViewMode()" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center gap-1.5 transition" title="切換合併同時間列或逐項獨立列">
+        <i data-lucide="rows-3" class="w-3.5 h-3.5"></i>
+        <span id="view-mode-label">檢視：逐項精準檢錄列</span>
+      </button>
+
+      <!-- Print / Export PDF Button -->
+      <button onclick="window.print()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm flex items-center gap-1.5 transition">
+        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+        <span>列印 / 匯出 A4 PDF</span>
+      </button>
     </div>
+  </header>
 
-    <!-- Route Selector Card -->
-    <div class="card">
-        <div class="station-box">
-            <div class="box-label"><span class="dot" style="background:#34c759;"></span> <span id="uiOriginLabel">起點站 (選擇路線及車站)</span></div>
-            <div class="select-row">
-                <div class="select-wrap line-col">
-                    <select id="startLine"></select>
+  <!-- Main Workspace: Left Sidebar Toolbar + Right Live Timetable Preview -->
+  <div id="main-workspace" class="flex-1 flex overflow-hidden relative">
+
+    <!-- LEFT SIDEBAR TOOLBAR -->
+    <aside id="sidebar-panel" class="w-full sm:w-[370px] lg:w-[390px] bg-white border-r border-slate-200 flex flex-col h-full shrink-0 z-10 shadow-lg lg:shadow-none absolute lg:static inset-y-0 left-0 transition-transform duration-200">
+      
+      <!-- Sidebar Navigation Pills -->
+      <div class="grid grid-cols-4 gap-1 p-2 bg-slate-50 border-b border-slate-200 shrink-0 text-xs font-semibold">
+        <button onclick="switchSidebarTab('editor')" id="stab-editor" class="sidebar-tab-btn py-2 px-1 rounded-lg flex flex-col items-center gap-1 bg-indigo-600 text-white shadow-sm">
+          <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+          <span>賽程編輯</span>
+        </button>
+        <button onclick="switchSidebarTab('adjuster')" id="stab-adjuster" class="sidebar-tab-btn py-2 px-1 rounded-lg flex flex-col items-center gap-1 text-slate-600 hover:bg-slate-200/70">
+          <i data-lucide="clock-4" class="w-4 h-4"></i>
+          <span>智慧調時</span>
+        </button>
+        <button onclick="switchSidebarTab('info')" id="stab-info" class="sidebar-tab-btn py-2 px-1 rounded-lg flex flex-col items-center gap-1 text-slate-600 hover:bg-slate-200/70">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          <span>賽事資訊</span>
+        </button>
+        <button onclick="switchSidebarTab('data')" id="stab-data" class="sidebar-tab-btn py-2 px-1 rounded-lg flex flex-col items-center gap-1 text-slate-600 hover:bg-slate-200/70">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          <span>組別/匯出</span>
+        </button>
+      </div>
+
+      <!-- Sidebar Scrollable Content -->
+      <div class="flex-1 overflow-y-auto p-3.5 space-y-4">
+
+        <!-- TAB 1: EVENT EDITOR (新增 / 編輯賽程項目) -->
+        <div id="panel-editor" class="sidebar-panel-section space-y-3.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5" id="editor-form-title">
+              <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+              新增賽程項目
+            </h2>
+            <button id="cancel-edit-btn" onclick="resetEventForm()" class="hidden text-xs text-slate-500 hover:text-rose-600 font-medium px-2 py-0.5 rounded bg-slate-100">
+              取消編輯
+            </button>
+          </div>
+
+          <form id="event-form" onsubmit="handleEventFormSubmit(event)" class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <input type="hidden" id="edit-event-id" value="" />
+
+            <!-- Gender & Age Group -->
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">組別 Gender</label>
+                <div class="grid grid-cols-2 gap-1 bg-white p-1 rounded-lg border border-slate-300">
+                  <label class="cursor-pointer">
+                    <input type="radio" name="gender" value="girls" checked class="peer sr-only" />
+                    <div class="text-center text-xs font-bold py-1.5 rounded-md peer-checked:bg-rose-500 peer-checked:text-white text-slate-600 transition">
+                      女子 Girls
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="gender" value="boys" class="peer sr-only" />
+                    <div class="text-center text-xs font-bold py-1.5 rounded-md peer-checked:bg-sky-600 peer-checked:text-white text-slate-600 transition">
+                      男子 Boys
+                    </div>
+                  </label>
                 </div>
-                <div class="select-wrap sta-col">
-                    <select id="startSta"></select>
-                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">年齡組別 Age Group</label>
+                <select id="input-age-group" class="w-full text-xs font-semibold bg-white border border-slate-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
             </div>
-        </div>
 
-        <div class="swap-row">
-            <button class="swap-btn" id="swapBtn">⇅ <span id="uiSwapText">起終點互換 (回程查詢)</span></button>
-        </div>
-
-        <div class="station-box">
-            <div class="box-label"><span class="dot" style="background:#ff3b30;"></span> <span id="uiDestLabel">終點站 (選擇路線及車站)</span></div>
-            <div class="select-row">
-                <div class="select-wrap line-col">
-                    <select id="endLine"></select>
-                </div>
-                <div class="select-wrap sta-col">
-                    <select id="endSta"></select>
-                </div>
+            <!-- Event Type & Event Name -->
+            <div class="grid grid-cols-5 gap-2">
+              <div class="col-span-2">
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">項目類型</label>
+                <select id="input-event-type" onchange="onEventTypeOrTimeChange()" class="w-full text-xs font-semibold bg-white border border-slate-300 rounded-lg px-2 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                  <option value="track">徑賽 Track</option>
+                  <option value="field">田賽 Field</option>
+                  <option value="relay">接力 Relay</option>
+                  <option value="combined">全能 Combined</option>
+                </select>
+              </div>
+              <div class="col-span-3">
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">項目名稱 Event Name</label>
+                <input type="text" id="input-event-name" required placeholder="如: 100m (H1-H6)" list="common-events-list" class="w-full text-xs font-semibold bg-white border border-slate-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <datalist id="common-events-list">
+                  <option value="60m (H1-H5)"></option>
+                  <option value="60m (F)"></option>
+                  <option value="100m (H1-H6)"></option>
+                  <option value="100m (F)"></option>
+                  <option value="200m (H1-H4)"></option>
+                  <option value="200m (F)"></option>
+                  <option value="400m (H1-H3)"></option>
+                  <option value="400m (F)"></option>
+                  <option value="800m (F)"></option>
+                  <option value="1500m (F)"></option>
+                  <option value="3000m (F)"></option>
+                  <option value="5000m (F)"></option>
+                  <option value="100m Hurdles (H1-H2)"></option>
+                  <option value="100m Hurdles -F"></option>
+                  <option value="110m Hurdles (H1-H2)"></option>
+                  <option value="110m Hurdles -F"></option>
+                  <option value="4 X 100m (F)"></option>
+                  <option value="4 X 400m (F)"></option>
+                  <option value="High Jump A (F)"></option>
+                  <option value="Long Jump Pitch A (F)"></option>
+                  <option value="Long Jump Pitch B (F)"></option>
+                  <option value="Triple Jump Pitch A (F)"></option>
+                  <option value="Shot Put (F)"></option>
+                  <option value="Discus (F)"></option>
+                  <option value="Javelin Throw (F)"></option>
+                  <option value="Softball Throw (F)"></option>
+                </datalist>
+              </div>
             </div>
+
+            <!-- Competition Time & Quick +/- Buttons -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-slate-600">比賽時間 Competition Time</label>
+                <div class="flex items-center gap-1">
+                  <button type="button" onclick="nudgeFormTime(-10)" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-700">-10m</button>
+                  <button type="button" onclick="nudgeFormTime(-5)" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-700">-5m</button>
+                  <button type="button" onclick="nudgeFormTime(5)" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-700">+5m</button>
+                  <button type="button" onclick="nudgeFormTime(10)" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-700">+10m</button>
+                </div>
+              </div>
+              <input type="time" id="input-comp-time" value="08:35" required onchange="onEventTypeOrTimeChange()" class="w-full text-sm font-bold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <!-- Roll Call Times (Auto / Manual) -->
+            <div class="bg-white p-2.5 rounded-lg border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input type="checkbox" id="auto-calc-call-checkbox" checked onchange="onEventTypeOrTimeChange()" class="rounded text-indigo-600 focus:ring-indigo-500" />
+                  <span>自動推算檢錄時間</span>
+                </label>
+                <span id="call-rule-hint" class="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">徑賽: 賽前20m~10m</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">開始檢錄 Start of Call</label>
+                  <input type="time" id="input-start-call" value="08:15" required class="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-md px-2 py-1.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">結束檢錄 End of Call</label>
+                  <input type="time" id="input-end-call" value="08:25" required class="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-md px-2 py-1.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit & Delete Buttons -->
+            <div class="flex items-center gap-2 pt-1">
+              <button type="submit" id="submit-event-btn" class="flex-1 py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>新增至時間表</span>
+              </button>
+              <button type="button" id="delete-event-btn" onclick="deleteEditingEvent()" class="hidden py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm flex items-center justify-center gap-1 transition" title="刪除此項目">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                <span>刪除</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Quick List of Events for Current Day (Searchable / Quick Nudge) -->
+          <div class="space-y-2 pt-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700">當日項目快速微調清單 (<span id="event-count-badge">0</span>)</span>
+              <input type="text" id="quick-search-event" oninput="renderSidebarEventList()" placeholder="搜尋項目..." class="text-xs border border-slate-300 rounded-md px-2 py-1 w-32 focus:ring-1 focus:ring-indigo-500 outline-none" />
+            </div>
+            <div id="sidebar-event-list" class="space-y-1.5 max-h-[290px] overflow-y-auto pr-1">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
         </div>
 
-        <div class="summary-bar" id="summaryBar">
-            <span>--</span>
-            <span>--</span>
-            <span>--</span>
+        <!-- TAB 2: SMART TIME ADJUSTER (智慧時間調整器) -->
+        <div id="panel-adjuster" class="sidebar-panel-section hidden space-y-4">
+          
+          <!-- Section A: Batch Time Shift -->
+          <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 space-y-3">
+            <div class="flex items-start gap-2">
+              <div class="p-1.5 rounded-lg bg-amber-500 text-white shrink-0 mt-0.5">
+                <i data-lucide="fast-forward" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-bold text-amber-950">批量時間平移 (Batch Time Shift)</h3>
+                <p class="text-[11px] text-amber-800 leading-relaxed mt-0.5">
+                  適用於天氣延誤或賽程超前，可將指定時間點（含）之後的所有項目統一延後或提早。
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[11px] font-bold text-amber-900 mb-1">起始時間點 (含)</label>
+                <input type="time" id="batch-from-time" value="10:00" class="w-full text-xs font-bold bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-amber-900 mb-1">調整分鐘數 (+/-)</label>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="batch-offset-mins" value="15" step="5" class="w-full text-xs font-bold bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-amber-500" />
+                  <span class="text-xs font-bold text-amber-900 shrink-0">分</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Preset Shift Chips -->
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" onclick="setBatchOffset(-15)" class="px-2 py-1 text-[11px] font-semibold rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-900">-15 分</button>
+              <button type="button" onclick="setBatchOffset(-5)" class="px-2 py-1 text-[11px] font-semibold rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-900">-5 分</button>
+              <button type="button" onclick="setBatchOffset(5)" class="px-2 py-1 text-[11px] font-semibold rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-900">+5 分</button>
+              <button type="button" onclick="setBatchOffset(10)" class="px-2 py-1 text-[11px] font-semibold rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-900">+10 分</button>
+              <button type="button" onclick="setBatchOffset(15)" class="px-2 py-1 text-[11px] font-semibold rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-900">+15 分</button>
+              <button type="button" onclick="setBatchOffset(30)" class="px-2 py-1 text-[11px] font-semibold rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-900">+30 分</button>
+            </div>
+
+            <label class="flex items-center gap-2 text-xs font-medium text-amber-950 cursor-pointer">
+              <input type="checkbox" id="batch-shift-call-times" checked class="rounded text-amber-600 focus:ring-amber-500" />
+              <span>同步平移檢錄時間 (Start & End of Call)</span>
+            </label>
+
+            <button type="button" onclick="applyBatchTimeShift()" class="w-full py-2 px-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span>執行批量時間調整</span>
+            </button>
+          </div>
+
+          <!-- Section B: Default Roll Call Offset Rules -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3">
+            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="sliders-horizontal" class="w-4 h-4 text-indigo-600"></i>
+              預設檢錄時間規則 (賽前分鐘數)
+            </h3>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                <div class="font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span>徑賽 / 接力 (Track & Relay)</span>
+                  <span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">標準：前20m ~ 前10m</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[10px] text-slate-500 block">開始檢錄 (賽前分鐘)</label>
+                    <input type="number" id="rule-track-start" value="20" min="5" max="90" onchange="saveCallRules()" class="w-full font-bold border border-slate-300 rounded px-2 py-1 mt-0.5" />
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 block">結束檢錄 (賽前分鐘)</label>
+                    <input type="number" id="rule-track-end" value="10" min="0" max="60" onchange="saveCallRules()" class="w-full font-bold border border-slate-300 rounded px-2 py-1 mt-0.5" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                <div class="font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span>田賽 / 全能 (Field & Combined)</span>
+                  <span class="text-[10px] text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">標準：前35m ~ 前25m</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[10px] text-slate-500 block">開始檢錄 (賽前分鐘)</label>
+                    <input type="number" id="rule-field-start" value="35" min="5" max="120" onchange="saveCallRules()" class="w-full font-bold border border-slate-300 rounded px-2 py-1 mt-0.5" />
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 block">結束檢錄 (賽前分鐘)</label>
+                    <input type="number" id="rule-field-end" value="25" min="0" max="90" onchange="saveCallRules()" class="w-full font-bold border border-slate-300 rounded px-2 py-1 mt-0.5" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" onclick="recalculateAllCallTimesByRule()" class="w-full py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>依上述規則重算當日所有檢錄時間</span>
+            </button>
+          </div>
         </div>
+
+        <!-- TAB 3: COMPETITION INFO & NOTICES (賽事基本資訊與公告) -->
+        <div id="panel-info" class="sidebar-panel-section hidden space-y-3.5">
+          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <i data-lucide="trophy" class="w-4 h-4 text-indigo-600"></i>
+            賽事基本資訊設定
+          </h3>
+
+          <div class="space-y-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">賽事中文主標題</label>
+              <input type="text" id="meta-title-zh" oninput="updateMetaFromInputs()" class="w-full font-bold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">賽事英文副標題</label>
+              <input type="text" id="meta-title-en" oninput="updateMetaFromInputs()" class="w-full font-semibold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">當日賽事日期 Date</label>
+                <input type="text" id="meta-day-date" oninput="updateCurrentDayMeta()" class="w-full font-bold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">日數分頁標籤 Label</label>
+                <input type="text" id="meta-day-label" oninput="updateCurrentDayMeta()" class="w-full font-bold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">比賽地點 Venue</label>
+              <input type="text" id="meta-venue" oninput="updateMetaFromInputs()" class="w-full font-semibold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">頂部檢錄及接力須知 (中/英)</label>
+              <textarea id="meta-top-notice" rows="4" oninput="updateMetaFromInputs()" class="w-full text-[11px] leading-relaxed bg-white border border-slate-300 rounded-lg p-2"></textarea>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">底部兼項情況說明 (Concurrent Events)</label>
+              <textarea id="meta-footer-notice" rows="4" oninput="updateMetaFromInputs()" class="w-full text-[11px] leading-relaxed bg-white border border-slate-300 rounded-lg p-2"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: AGE GROUPS, FILTER & EXPORT/IMPORT (組別與匯出) -->
+        <div id="panel-data" class="sidebar-panel-section hidden space-y-4">
+          
+          <!-- Age Group Filter Highlight -->
+          <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3 space-y-2">
+            <h3 class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+              <i data-lucide="highlighter" class="w-4 h-4 text-indigo-600"></i>
+              年齡組別高亮篩選 (方便教練/運動員檢視)
+            </h3>
+            <select id="highlight-group-select" onchange="setHighlightGroup(this.value)" class="w-full text-xs font-bold bg-white border border-indigo-300 rounded-lg px-2.5 py-2 outline-none">
+              <option value="">顯示全部組別 (無高亮篩選)</option>
+            </select>
+          </div>
+
+          <!-- Manage Age Group Columns -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-800">年齡組別欄位管理</h3>
+              <button type="button" onclick="addAgeGroupColumn()" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-0.5">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增組別
+              </button>
+            </div>
+            <div id="age-groups-editor-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- Export & Import -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5">
+            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="download" class="w-4 h-4 text-emerald-600"></i>
+              檔案匯出與資料備份
+            </h3>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="exportCSV()" class="py-2 px-2.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5">
+                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>匯出 CSV 表格</span>
+              </button>
+              <button type="button" onclick="exportJSON()" class="py-2 px-2.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5">
+                <i data-lucide="file-code" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <span>匯出 JSON 設定</span>
+              </button>
+            </div>
+
+            <label class="w-full py-2 px-2.5 rounded-lg bg-white border border-dashed border-slate-400 hover:border-indigo-500 hover:bg-indigo-50/40 text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5 cursor-pointer transition">
+              <i data-lucide="upload" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span>匯入 JSON 設定檔</span>
+              <input type="file" accept=".json" onchange="importJSON(event)" class="hidden" />
+            </label>
+
+            <div class="pt-2 border-t border-slate-200">
+              <button type="button" onclick="openConfirmModal('確定要重設為「香港青少年田徑分齡賽2026 (5)」預設範本嗎？目前的未匯出變更將會被覆蓋。', resetToDefaultTemplate)" class="w-full py-2 px-2.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-xs font-bold text-rose-700 flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>重設為預設範本 (Day 1 & Day 2)</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Sidebar Footer Status -->
+      <div class="p-2.5 bg-slate-100 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between shrink-0">
+        <span class="flex items-center gap-1 text-emerald-700 font-medium">
+          <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+          已自動儲存至瀏覽器
+        </span>
+        <span>點擊右側項目可直接編輯</span>
+      </div>
+    </aside>
+
+    <!-- RIGHT LIVE TIMETABLE PREVIEW -->
+    <main id="preview-scroll-container" class="flex-1 overflow-auto bg-slate-200/80 p-3 sm:p-5 lg:p-6">
+      <div id="timetable-sheet" class="bg-white shadow-xl border border-slate-300 rounded-xl p-4 sm:p-6 max-w-[1680px] mx-auto transition-all">
+        
+        <!-- Timetable Top Header -->
+        <div class="text-center space-y-1 mb-3">
+          <h2 id="preview-title-zh" class="text-lg sm:text-xl font-black text-slate-900 tracking-wide">
+            香港青少年田徑分齡賽2026 (5)
+          </h2>
+          <p id="preview-title-en" class="text-xs sm:text-sm font-bold text-slate-700">
+            Hong Kong Junior Age Group Athletics Competition 2026 - 5
+          </p>
+        </div>
+
+        <!-- Roll Call & Relay Instructions Box -->
+        <div id="preview-top-notice" class="text-[11px] sm:text-xs text-slate-700 bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 mb-3 leading-relaxed whitespace-pre-line">
+        </div>
+
+        <!-- Date, Venue & Day Badge Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900 text-white px-3.5 py-2 rounded-t-lg text-xs font-bold">
+          <div class="flex items-center gap-4">
+            <span>Competition Date 賽事日期：<span id="preview-date" class="text-amber-300">12/9/2026</span></span>
+            <span class="px-2 py-0.5 rounded bg-indigo-600 text-white text-[11px]" id="preview-day-badge">DAY 1</span>
+          </div>
+          <div>
+            <span>Venue 地點：<span id="preview-venue" class="text-emerald-300">將軍澳運動場 Tseung Kwan O Sports Ground</span></span>
+          </div>
+        </div>
+
+        <!-- Legend Bar (Screen Only) -->
+        <div class="no-print flex flex-wrap items-center justify-between gap-2 bg-slate-100 border-x border-slate-400 px-3 py-1.5 text-[11px] text-slate-600">
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="font-bold text-slate-700">項目圖例：</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span> 徑賽 Track</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-purple-500 inline-block"></span> 田賽 Field</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500 inline-block"></span> 接力 Relay</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500 inline-block"></span> 全能 Combined</span>
+          </div>
+          <div class="text-slate-500">
+            提示：點擊表格內任何項目可立即載入左側編輯，或使用時間欄旁的 <span class="font-bold text-slate-700">-5 / +5</span> 快速調時
+          </div>
+        </div>
+
+        <!-- Main Responsive Timetable Table Wrapper -->
+        <div class="overflow-x-auto border-b border-slate-500">
+          <table class="timetable-table text-[11px] sm:text-xs text-center" id="main-timetable">
+            <thead id="timetable-thead">
+              <!-- Populated dynamically -->
+            </thead>
+            <tbody id="timetable-tbody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer Concurrent Events Rules (兼項情況) -->
+        <div id="preview-footer-notice" class="mt-3 text-[11px] text-slate-700 bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 leading-relaxed whitespace-pre-line">
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Custom Confirm Modal (Replaces window.confirm) -->
+  <div id="modal-backdrop" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-5 space-y-4">
+      <div class="flex items-center gap-2.5 text-slate-900">
+        <div class="w-9 h-9 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-sm font-bold">確認操作</h3>
+      </div>
+      <p id="modal-message" class="text-xs text-slate-600 leading-relaxed"></p>
+      <div class="flex justify-end gap-2 pt-1">
+        <button onclick="closeConfirmModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-300">取消</button>
+        <button id="modal-confirm-btn" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700">確定執行</button>
+      </div>
     </div>
+  </div>
 
-    <div id="itineraryContainer"></div>
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <div class="footer-note" id="uiFooterNote">每 10 秒自動刷新 ｜ 港鐵規定尾班車開出前 5 分鐘停止入閘</div>
+  <script>
+    // =========================================================================
+    // 1. DEFAULT DATA TEMPLATE (Extracted from Hong Kong Junior Age Group 2026-5)
+    // =========================================================================
+    const STORAGE_KEY = 'hk_athletics_timetable_studio_v1';
 
-    <script>
-        const API_URL = "https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php";
-        let currentLang = "TC"; // "TC" or "EN"
+    const DEFAULT_AGE_GROUPS = [
+      { id: 'u9', code: 'U9', year: '2018' },
+      { id: 'u10', code: 'U10', year: '2017' },
+      { id: 'u11', code: 'U11', year: '2016' },
+      { id: 'u12', code: 'U12', year: '2015' },
+      { id: 'u14', code: 'U14', year: '2013-2014' },
+      { id: 'u16', code: 'U16', year: '2011-2012' },
+      { id: 'u18', code: 'U18', year: '2009-2010' },
+      { id: 'u20', code: 'U20', year: '2007-2008' }
+    ];
+
+    const DEFAULT_TOP_NOTICE = `場內不設廣播，請各運動員按賽事時間表上之檢錄時間內到達檢錄處報到，田項及徑項均需到檢錄處檢錄，由工作人員帶往比賽場地。
+There is no announcement, all athletes must attend at Roll call area on time, officials will escort the reported athletes to the competition area after the end of the call.
+接力名單需於檢錄時交到檢錄處，檢錄時需4位運動員一同出席。
+Relay teams are requested to submit their team lists to the Call room within the roll call time as per event. Late submission will be disqualified.`;
+
+    const DEFAULT_FOOTER_NOTICE = `兼項情況：運動員須先向田賽裁判長請假，裁判長允許運動員以不同抽籤排定的順序進行一次試跳/擲後，方可離去參加徑賽項目。返回後，應即向裁判長消假。
+If the athletes compete in track and field events at the same time, they should inform the field judges before they leave for the other event, and report to Call Room in person for their Track Event. Athletes should report to the field judges again immediately after finishing the track event.
+若運動員向田賽裁判長請假前往徑賽項目參賽，當返回田賽賽場時比賽已結束，恕不能追討重賽。
+If the athlete asked for leave from the field event to compete in a track event, and the competition is over when he returns to the field event, no rematch can be claimed.`;
+
+    function createInitialState() {
+      return {
+        meta: {
+          titleZh: '香港青少年田徑分齡賽2026 (5)',
+          titleEn: 'Hong Kong Junior Age Group Athletics Competition 2026 - 5',
+          venue: '將軍澳運動場 Tseung Kwan O Sports Ground',
+          topNotice: DEFAULT_TOP_NOTICE,
+          footerNotice: DEFAULT_FOOTER_NOTICE
+        },
+        callRules: {
+          trackStart: 20,
+          trackEnd: 10,
+          fieldStart: 35,
+          fieldEnd: 25
+        },
+        ageGroups: JSON.parse(JSON.stringify(DEFAULT_AGE_GROUPS)),
+        activeDayId: 'day1',
+        rowViewMode: 'detailed', // 'detailed' (each compTime+callTime combo) or 'merged' (merged by compTime)
+        highlightGroupId: '',
+        days: [
+          {
+            id: 'day1',
+            label: 'Day 1',
+            date: '12/9/2026',
+            events: [
+              // Morning Session (from PDF Page 1)
+              { id: 'd1-1', time: '08:35', startCall: '08:10', endCall: '08:20', gender: 'girls', ageGroup: 'u14', name: '100m Hurdles (H1-H3)', type: 'track' },
+              { id: 'd1-2', time: '08:35', startCall: '08:00', endCall: '08:10', gender: 'girls', ageGroup: 'u16', name: 'Triple Jump Pitch A (F-3)', type: 'field' },
+              { id: 'd1-3', time: '08:35', startCall: '08:00', endCall: '08:10', gender: 'girls', ageGroup: 'u18', name: 'Triple Jump Pitch A (F-4)', type: 'field' },
+              { id: 'd1-4', time: '08:35', startCall: '08:00', endCall: '08:10', gender: 'girls', ageGroup: 'u20', name: 'Triple Jump Pitch A (F-3)', type: 'field' },
+              { id: 'd1-5', time: '08:35', startCall: '08:00', endCall: '08:10', gender: 'boys', ageGroup: 'u16', name: 'Discus (F-5)', type: 'field' },
+
+              { id: 'd1-6', time: '08:40', startCall: '08:05', endCall: '08:15', gender: 'girls', ageGroup: 'u12', name: 'Discus (F-3)', type: 'field' },
+              { id: 'd1-7', time: '08:40', startCall: '08:05', endCall: '08:15', gender: 'boys', ageGroup: 'u10', name: 'Long Jump Pitch C-F1 (1-16)', type: 'field' },
+              { id: 'd1-8', time: '08:40', startCall: '08:05', endCall: '08:15', gender: 'boys', ageGroup: 'u12', name: 'Long Jump Pitch B-F1 (1-20)', type: 'field' },
+              { id: 'd1-9', time: '08:40', startCall: '08:05', endCall: '08:15', gender: 'boys', ageGroup: 'u18', name: 'Shot Put (F-8)', type: 'field' },
+
+              { id: 'd1-10', time: '08:45', startCall: '08:20', endCall: '08:30', gender: 'girls', ageGroup: 'u16', name: '100m Hurdles (H1-H2)', type: 'track' },
+              { id: 'd1-11', time: '08:50', startCall: '08:25', endCall: '08:35', gender: 'girls', ageGroup: 'u18', name: '100m Hurdles (H1-H2)', type: 'track' },
+              { id: 'd1-12', time: '08:55', startCall: '08:30', endCall: '08:40', gender: 'girls', ageGroup: 'u20', name: 'Heptathlon 100m Hurdles', type: 'combined' },
+              { id: 'd1-13', time: '09:00', startCall: '08:35', endCall: '08:45', gender: 'boys', ageGroup: 'u14', name: '100m Hurdles (H1-H2)', type: 'track' },
+              { id: 'd1-14', time: '09:05', startCall: '08:40', endCall: '08:50', gender: 'boys', ageGroup: 'u16', name: '110m Hurdles (H1-H2)', type: 'track' },
+              { id: 'd1-15', time: '09:20', startCall: '08:45', endCall: '08:55', gender: 'girls', ageGroup: 'u16', name: 'Discus (F-9)', type: 'field' },
+              { id: 'd1-16', time: '09:20', startCall: '08:45', endCall: '08:55', gender: 'boys', ageGroup: 'u14', name: 'High Jump A (F-10)', type: 'field' },
+              { id: 'd1-17', time: '09:20', startCall: '08:55', endCall: '09:05', gender: 'boys', ageGroup: 'u18', name: '110m Hurdles (H1-H2)', type: 'track' },
+              { id: 'd1-18', time: '09:40', startCall: '09:15', endCall: '09:25', gender: 'girls', ageGroup: 'u12', name: '100m (H1-H6)', type: 'track' },
+              { id: 'd1-19', time: '09:55', startCall: '09:35', endCall: '09:45', gender: 'girls', ageGroup: 'u16', name: '2000m SC (F-5)', type: 'track' },
+              { id: 'd1-20', time: '10:00', startCall: '09:25', endCall: '09:35', gender: 'boys', ageGroup: 'u12', name: 'Long Jump Pitch B-F2 (1-21)', type: 'field' },
+              { id: 'd1-21', time: '10:00', startCall: '09:40', endCall: '09:50', gender: 'boys', ageGroup: 'u16', name: '2000m SC (F-8)', type: 'track' },
+              { id: 'd1-22', time: '10:00', startCall: '09:25', endCall: '09:35', gender: 'boys', ageGroup: 'u18', name: 'Shot Put (F-12)', type: 'field' },
+
+              { id: 'd1-23', time: '10:10', startCall: '09:50', endCall: '10:00', gender: 'girls', ageGroup: 'u12', name: '100m (H7-H9)', type: 'track' },
+              { id: 'd1-24', time: '10:10', startCall: '09:50', endCall: '10:00', gender: 'girls', ageGroup: 'u14', name: '100m (H1-H3)', type: 'track' },
+              { id: 'd1-25', time: '10:10', startCall: '09:35', endCall: '09:45', gender: 'boys', ageGroup: 'u10', name: 'Long Jump Pitch C-F2 (1-15)', type: 'field' },
+              { id: 'd1-26', time: '10:30', startCall: '10:10', endCall: '10:20', gender: 'girls', ageGroup: 'u16', name: '100m (H1-H3)', type: 'track' },
+              { id: 'd1-27', time: '10:30', startCall: '10:10', endCall: '10:20', gender: 'boys', ageGroup: 'u14', name: '100m (H1-H4)', type: 'track' },
+
+              { id: 'd1-28', time: '11:00', startCall: '10:40', endCall: '10:50', gender: 'girls', ageGroup: 'u12', name: '400m (H1-H4)', type: 'track' },
+              { id: 'd1-29', time: '11:00', startCall: '10:25', endCall: '10:35', gender: 'girls', ageGroup: 'u14', name: 'High Jump A (F-17)', type: 'field' },
+              { id: 'd1-30', time: '11:20', startCall: '11:00', endCall: '11:10', gender: 'boys', ageGroup: 'u14', name: '100m (H5-H10)', type: 'track' },
+              { id: 'd1-31', time: '11:35', startCall: '11:00', endCall: '11:10', gender: 'girls', ageGroup: 'u18', name: 'Discus (F-5)', type: 'field' },
+              { id: 'd1-32', time: '11:45', startCall: '11:25', endCall: '11:35', gender: 'boys', ageGroup: 'u16', name: '100m (H1-H8)', type: 'track' },
+              { id: 'd1-33', time: '12:15', startCall: '11:55', endCall: '12:05', gender: 'girls', ageGroup: 'u14', name: '400m (H1-H5)', type: 'track' },
+              { id: 'd1-34', time: '12:35', startCall: '12:00', endCall: '12:10', gender: 'boys', ageGroup: 'u18', name: 'Triple Jump Pitch A (F-18)', type: 'field' },
+
+              { id: 'd1-35', time: '13:25', startCall: '13:05', endCall: '13:15', gender: 'girls', ageGroup: 'u14', name: '100m Hurdles -F', type: 'track' },
+              { id: 'd1-36', time: '13:35', startCall: '13:15', endCall: '13:25', gender: 'girls', ageGroup: 'u16', name: '100m Hurdles -F', type: 'track' },
+              { id: 'd1-37', time: '13:45', startCall: '13:25', endCall: '13:35', gender: 'boys', ageGroup: 'u14', name: '100m Hurdles -F', type: 'track' },
+              { id: 'd1-38', time: '13:55', startCall: '13:35', endCall: '13:45', gender: 'girls', ageGroup: 'u14', name: '1500m (F)', type: 'track' },
+
+              // Afternoon Session (from PDF Page 2)
+              { id: 'd1-39', time: '14:20', startCall: '13:45', endCall: '13:55', gender: 'girls', ageGroup: 'u12', name: 'High Jump B (F-22)', type: 'field' },
+              { id: 'd1-40', time: '14:35', startCall: '14:15', endCall: '14:25', gender: 'boys', ageGroup: 'u16', name: '1500m (F1-2)', type: 'track' },
+              { id: 'd1-41', time: '15:00', startCall: '14:40', endCall: '14:50', gender: 'girls', ageGroup: 'u14', name: '100m (F)', type: 'track' },
+              { id: 'd1-42', time: '15:05', startCall: '14:45', endCall: '14:55', gender: 'girls', ageGroup: 'u16', name: '100m (F)', type: 'track' },
+              { id: 'd1-43', time: '15:15', startCall: '14:55', endCall: '15:05', gender: 'boys', ageGroup: 'u14', name: '100m (F)', type: 'track' },
+              { id: 'd1-44', time: '15:20', startCall: '15:00', endCall: '15:10', gender: 'boys', ageGroup: 'u16', name: '100m (F)', type: 'track' },
+              { id: 'd1-45', time: '16:10', startCall: '15:50', endCall: '16:00', gender: 'girls', ageGroup: 'u18', name: '5000m (F)', type: 'track' },
+              { id: 'd1-46', time: '16:50', startCall: '16:30', endCall: '16:40', gender: 'boys', ageGroup: 'u18', name: '5000m (F)', type: 'track' },
+              { id: 'd1-47', time: '17:15', startCall: '16:55', endCall: '17:05', gender: 'girls', ageGroup: 'u10', name: '400m (F)', type: 'track' },
+              { id: 'd1-48', time: '17:15', startCall: '16:55', endCall: '17:05', gender: 'girls', ageGroup: 'u11', name: '400m (F)', type: 'track' },
+              { id: 'd1-49', time: '17:15', startCall: '16:55', endCall: '17:05', gender: 'girls', ageGroup: 'u12', name: '400m (F)', type: 'track' },
+              { id: 'd1-50', time: '17:15', startCall: '16:55', endCall: '17:05', gender: 'girls', ageGroup: 'u14', name: '400m (F)', type: 'track' },
+              { id: 'd1-51', time: '18:00', startCall: '17:40', endCall: '17:50', gender: 'girls', ageGroup: 'u16', name: '4 X 100m (F)', type: 'relay' },
+              { id: 'd1-52', time: '18:10', startCall: '17:50', endCall: '18:00', gender: 'boys', ageGroup: 'u16', name: '4 X 100m (F)', type: 'relay' },
+              { id: 'd1-53', time: '18:20', startCall: '18:00', endCall: '18:10', gender: 'girls', ageGroup: 'u16', name: '200m (F)', type: 'track' },
+              { id: 'd1-54', time: '18:30', startCall: '18:10', endCall: '18:20', gender: 'boys', ageGroup: 'u16', name: '200m (F)', type: 'track' },
+              { id: 'd1-55', time: '18:40', startCall: '18:20', endCall: '18:30', gender: 'girls', ageGroup: 'u18', name: '800m Walk (F)', type: 'track' }
+            ]
+          },
+          {
+            id: 'day2',
+            label: 'Day 2',
+            date: '13/9/2026',
+            events: [
+              { id: 'd2-1', time: '08:35', startCall: '08:15', endCall: '08:25', gender: 'girls', ageGroup: 'u9', name: '60m (H1-4)', type: 'track' },
+              { id: 'd2-2', time: '08:35', startCall: '08:00', endCall: '08:10', gender: 'boys', ageGroup: 'u18', name: 'High Jump A (F7)', type: 'field' },
+              { id: 'd2-3', time: '08:40', startCall: '08:20', endCall: '08:30', gender: 'girls', ageGroup: 'u10', name: '60m (H1-5)', type: 'track' },
+              { id: 'd2-4', time: '08:40', startCall: '08:05', endCall: '08:15', gender: 'boys', ageGroup: 'u11', name: 'Softball Throw (F-15)', type: 'field' },
+              { id: 'd2-5', time: '08:50', startCall: '08:30', endCall: '08:40', gender: 'girls', ageGroup: 'u11', name: '60m (H1-7)', type: 'track' },
+              { id: 'd2-6', time: '09:00', startCall: '08:25', endCall: '08:35', gender: 'girls', ageGroup: 'u16', name: 'Long Jump Pitch B (F1-9)', type: 'field' },
+              { id: 'd2-7', time: '09:00', startCall: '08:25', endCall: '08:35', gender: 'boys', ageGroup: 'u20', name: 'Javelin Throw (F-16)', type: 'field' },
+              { id: 'd2-8', time: '09:40', startCall: '09:20', endCall: '09:30', gender: 'boys', ageGroup: 'u9', name: '60m (H1-5)', type: 'track' },
+              { id: 'd2-9', time: '10:40', startCall: '10:20', endCall: '10:30', gender: 'boys', ageGroup: 'u12', name: '60m (H1-6)', type: 'track' },
+              { id: 'd2-10', time: '12:00', startCall: '11:40', endCall: '11:50', gender: 'girls', ageGroup: 'u9', name: '60m (F)', type: 'track' },
+              { id: 'd2-11', time: '12:00', startCall: '11:40', endCall: '11:50', gender: 'girls', ageGroup: 'u10', name: '60m (F)', type: 'track' },
+              { id: 'd2-12', time: '12:30', startCall: '12:10', endCall: '12:20', gender: 'boys', ageGroup: 'u9', name: '60m (F)', type: 'track' },
+              { id: 'd2-13', time: '14:10', startCall: '13:50', endCall: '14:00', gender: 'girls', ageGroup: 'u14', name: '800m (F1-2)', type: 'track' },
+              { id: 'd2-14', time: '14:26', startCall: '14:06', endCall: '14:16', gender: 'boys', ageGroup: 'u14', name: '800m (F1-2)', type: 'track' },
+              { id: 'd2-15', time: '17:15', startCall: '16:55', endCall: '17:05', gender: 'girls', ageGroup: 'u18', name: '3000m (F)', type: 'track' },
+              { id: 'd2-16', time: '17:40', startCall: '17:20', endCall: '17:30', gender: 'girls', ageGroup: 'u10', name: '4 X 100m (F1-2)', type: 'relay' },
+              { id: 'd2-17', time: '18:05', startCall: '17:45', endCall: '17:55', gender: 'girls', ageGroup: 'u18', name: '4 X 400m (F)', type: 'relay' },
+              { id: 'd2-18', time: '18:10', startCall: '17:50', endCall: '18:00', gender: 'boys', ageGroup: 'u18', name: '4 X 400m (F)', type: 'relay' },
+              { id: 'd2-19', time: '18:45', startCall: '18:25', endCall: '18:35', gender: 'boys', ageGroup: 'u18', name: '3000m (F)', type: 'track' }
+            ]
+          }
+        ]
+      };
+    }
+
+    // =========================================================================
+    // 2. APPLICATION STATE & STORAGE MANAGEMENT
+    // =========================================================================
+    let appState = loadState();
+    let pendingModalCallback = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.days && Array.isArray(parsed.days)) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse saved timetable state, loading default.', e);
+      }
+      return createInitialState();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.error('Failed to save to localStorage', e);
+      }
+    }
+
+    function getActiveDay() {
+      return appState.days.find(d => d.id === appState.activeDayId) || appState.days[0];
+    }
+
+    // =========================================================================
+    // 3. TIME ARITHMETIC UTILITIES
+    // =========================================================================
+    function timeToMinutes(timeStr) {
+      if (!timeStr || !timeStr.includes(':')) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return (h * 60) + m;
+    }
+
+    function minutesToTime(totalMins) {
+      // Wrap cleanly within 00:00 - 23:59
+      let wrapped = ((totalMins % 1440) + 1440) % 1440;
+      const h = Math.floor(wrapped / 60);
+      const m = wrapped % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    function formatDisplayTime(timeStr) {
+      // Format "08:35" -> "8:35" to match official HKAAA timetable style while keeping 2-digit minutes
+      if (!timeStr) return '';
+      const [h, m] = timeStr.split(':');
+      return `${parseInt(h, 10)}:${m}`;
+    }
+
+    function addMinutesToTime(timeStr, offsetMins) {
+      return minutesToTime(timeToMinutes(timeStr) + offsetMins);
+    }
+
+    function calculateDefaultCallTimes(compTime, eventType) {
+      const isFieldLike = (eventType === 'field' || eventType === 'combined');
+      const startOffset = isFieldLike ? appState.callRules.fieldStart : appState.callRules.trackStart;
+      const endOffset = isFieldLike ? appState.callRules.fieldEnd : appState.callRules.trackEnd;
+      return {
+        startCall: addMinutesToTime(compTime, -startOffset),
+        endCall: addMinutesToTime(compTime, -endOffset)
+      };
+    }
+
+    // =========================================================================
+    // 4. UI NAVIGATION & NOTIFICATIONS
+    // =========================================================================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-slate-900 text-white border-emerald-500',
+        info: 'bg-indigo-900 text-white border-indigo-400',
+        warn: 'bg-amber-900 text-white border-amber-400'
+      };
+      toast.className = `pointer-events-auto px-3.5 py-2.5 rounded-xl shadow-lg border-l-4 text-xs font-semibold flex items-center gap-2 transition-all duration-200 ${colors[type] || colors.success}`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(6px)';
+        setTimeout(() => toast.remove(), 200);
+      }, 2600);
+    }
+
+    function openConfirmModal(message, onConfirm) {
+      document.getElementById('modal-message').textContent = message;
+      pendingModalCallback = onConfirm;
+      document.getElementById('modal-backdrop').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('modal-backdrop').classList.add('hidden');
+      pendingModalCallback = null;
+    }
+
+    document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+      if (typeof pendingModalCallback === 'function') {
+        pendingModalCallback();
+      }
+      closeConfirmModal();
+    });
+
+    function switchSidebarTab(tabName) {
+      document.querySelectorAll('.sidebar-panel-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+
+      document.querySelectorAll('.sidebar-tab-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-600', 'hover:bg-slate-200/70');
+      });
+      const activeBtn = document.getElementById(`stab-${tabName}`);
+      activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+      activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-200/70');
+    }
+
+    // Mobile sidebar drawer toggle
+    document.getElementById('mobile-sidebar-toggle').addEventListener('click', () => {
+      const panel = document.getElementById('sidebar-panel');
+      panel.classList.toggle('-translate-x-full');
+    });
+
+    // =========================================================================
+    // 5. EVENT FORM & CRUD OPERATIONS
+    // =========================================================================
+    function onEventTypeOrTimeChange() {
+      const autoCalc = document.getElementById('auto-calc-call-checkbox').checked;
+      const type = document.getElementById('input-event-type').value;
+      const compTime = document.getElementById('input-comp-time').value;
+      const hintEl = document.getElementById('call-rule-hint');
+
+      const isFieldLike = (type === 'field' || type === 'combined');
+      if (isFieldLike) {
+        hintEl.textContent = `田賽/全能: 賽前${appState.callRules.fieldStart}m~${appState.callRules.fieldEnd}m`;
+      } else {
+        hintEl.textContent = `徑賽/接力: 賽前${appState.callRules.trackStart}m~${appState.callRules.trackEnd}m`;
+      }
+
+      if (autoCalc && compTime) {
+        const calls = calculateDefaultCallTimes(compTime, type);
+        document.getElementById('input-start-call').value = calls.startCall;
+        document.getElementById('input-end-call').value = calls.endCall;
+      }
+    }
+
+    function nudgeFormTime(deltaMins) {
+      const compInput = document.getElementById('input-comp-time');
+      if (!compInput.value) return;
+      compInput.value = addMinutesToTime(compInput.value, deltaMins);
+
+      if (document.getElementById('auto-calc-call-checkbox').checked) {
+        onEventTypeOrTimeChange();
+      } else {
+        const startInput = document.getElementById('input-start-call');
+        const endInput = document.getElementById('input-end-call');
+        if (startInput.value) startInput.value = addMinutesToTime(startInput.value, deltaMins);
+        if (endInput.value) endInput.value = addMinutesToTime(endInput.value, deltaMins);
+      }
+    }
+
+    function handleEventFormSubmit(e) {
+      e.preventDefault();
+      const day = getActiveDay();
+      const editId = document.getElementById('edit-event-id').value;
+      const gender = document.querySelector('input[name="gender"]:checked').value;
+      const ageGroup = document.getElementById('input-age-group').value;
+      const type = document.getElementById('input-event-type').value;
+      const name = document.getElementById('input-event-name').value.trim();
+      const time = document.getElementById('input-comp-time').value;
+      const startCall = document.getElementById('input-start-call').value;
+      const endCall = document.getElementById('input-end-call').value;
+
+      if (!name || !time) return;
+
+      if (editId) {
+        const idx = day.events.findIndex(ev => ev.id === editId);
+        if (idx !== -1) {
+          day.events[idx] = { id: editId, time, startCall, endCall, gender, ageGroup, name, type };
+          showToast(`已更新項目：${name} (${formatDisplayTime(time)})`);
+        }
+        resetEventForm();
+      } else {
+        const newEvent = {
+          id: 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+          time,
+          startCall,
+          endCall,
+          gender,
+          ageGroup,
+          name,
+          type
+        };
+        day.events.push(newEvent);
+        showToast(`已新增項目：${name} (${formatDisplayTime(time)})`);
+        document.getElementById('input-event-name').value = '';
+      }
+
+      saveState();
+      renderAll();
+    }
+
+    function loadEventIntoEditor(eventId) {
+      const day = getActiveDay();
+      const ev = day.events.find(item => item.id === eventId);
+      if (!ev) return;
+
+      switchSidebarTab('editor');
+      // Ensure sidebar is visible on mobile
+      document.getElementById('sidebar-panel').classList.remove('-translate-x-full');
+
+      document.getElementById('edit-event-id').value = ev.id;
+      document.querySelector(`input[name="gender"][value="${ev.gender}"]`).checked = true;
+      document.getElementById('input-age-group').value = ev.ageGroup;
+      document.getElementById('input-event-type').value = ev.type || 'track';
+      document.getElementById('input-event-name').value = ev.name;
+      document.getElementById('input-comp-time').value = ev.time;
+      document.getElementById('input-start-call').value = ev.startCall;
+      document.getElementById('input-end-call').value = ev.endCall;
+
+      // Update UI to Editing Mode
+      document.getElementById('editor-form-title').innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> 編輯項目：<span class="text-indigo-600 truncate max-w-[160px]">${ev.name}</span>`;
+      document.getElementById('cancel-edit-btn').classList.remove('hidden');
+      document.getElementById('delete-event-btn').classList.remove('hidden');
+      document.getElementById('submit-event-btn').innerHTML = `<i data-lucide="save" class="w-4 h-4"></i><span>儲存變更</span>`;
+      document.getElementById('submit-event-btn').classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+      document.getElementById('submit-event-btn').classList.add('bg-amber-600', 'hover:bg-amber-700');
+      lucide.createIcons();
+    }
+
+    function resetEventForm() {
+      document.getElementById('edit-event-id').value = '';
+      document.getElementById('input-event-name').value = '';
+      document.getElementById('editor-form-title').innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-600"></span> 新增賽程項目`;
+      document.getElementById('cancel-edit-btn').classList.add('hidden');
+      document.getElementById('delete-event-btn').classList.add('hidden');
+      document.getElementById('submit-event-btn').innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4"></i><span>新增至時間表</span>`;
+      document.getElementById('submit-event-btn').classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+      document.getElementById('submit-event-btn').classList.remove('bg-amber-600', 'hover:bg-amber-700');
+      onEventTypeOrTimeChange();
+      lucide.createIcons();
+    }
+
+    function deleteEditingEvent() {
+      const editId = document.getElementById('edit-event-id').value;
+      if (!editId) return;
+      deleteEventById(editId);
+      resetEventForm();
+    }
+
+    function deleteEventById(eventId) {
+      const day = getActiveDay();
+      const target = day.events.find(e => e.id === eventId);
+      day.events = day.events.filter(e => e.id !== eventId);
+      saveState();
+      renderAll();
+      if (target) showToast(`已刪除：${target.name}`, 'warn');
+    }
+
+    // Quick +/- nudge on a single event
+    function nudgeSingleEvent(eventId, deltaMins, e) {
+      if (e) e.stopPropagation();
+      const day = getActiveDay();
+      const ev = day.events.find(item => item.id === eventId);
+      if (!ev) return;
+
+      ev.time = addMinutesToTime(ev.time, deltaMins);
+      ev.startCall = addMinutesToTime(ev.startCall, deltaMins);
+      ev.endCall = addMinutesToTime(ev.endCall, deltaMins);
+
+      if (document.getElementById('edit-event-id').value === eventId) {
+        loadEventIntoEditor(eventId);
+      }
+
+      saveState();
+      renderAll();
+      showToast(`${ev.name} 已調整 ${deltaMins > 0 ? '+' : ''}${deltaMins} 分鐘`, 'info');
+    }
+
+    // Quick +/- nudge on an entire time slot row
+    function nudgeTimeSlotRow(compTime, startCall, endCall, deltaMins, isMergedMode) {
+      const day = getActiveDay();
+      let count = 0;
+      day.events.forEach(ev => {
+        const matches = isMergedMode
+          ? (ev.time === compTime)
+          : (ev.time === compTime && ev.startCall === startCall && ev.endCall === endCall);
+        if (matches) {
+          ev.time = addMinutesToTime(ev.time, deltaMins);
+          ev.startCall = addMinutesToTime(ev.startCall, deltaMins);
+          ev.endCall = addMinutesToTime(ev.endCall, deltaMins);
+          count++;
+        }
+      });
+
+      saveState();
+      renderAll();
+      showToast(`已將 ${formatDisplayTime(compTime)} 時段 (${count} 項) 調整 ${deltaMins > 0 ? '+' : ''}${deltaMins} 分鐘`, 'info');
+    }
+
+    // =========================================================================
+    // 6. SMART TIME ADJUSTER (BATCH SHIFT & CALL RULES)
+    // =========================================================================
+    function setBatchOffset(mins) {
+      document.getElementById('batch-offset-mins').value = mins;
+    }
+
+    function applyBatchTimeShift() {
+      const fromTime = document.getElementById('batch-from-time').value;
+      const offsetMins = parseInt(document.getElementById('batch-offset-mins').value, 10);
+      const shiftCalls = document.getElementById('batch-shift-call-times').checked;
+
+      if (!fromTime || isNaN(offsetMins) || offsetMins === 0) {
+        showToast('請輸入有效的時間點與非零分鐘數', 'warn');
+        return;
+      }
+
+      const fromMins = timeToMinutes(fromTime);
+      const day = getActiveDay();
+      let affectedCount = 0;
+
+      day.events.forEach(ev => {
+        if (timeToMinutes(ev.time) >= fromMins) {
+          ev.time = addMinutesToTime(ev.time, offsetMins);
+          if (shiftCalls) {
+            ev.startCall = addMinutesToTime(ev.startCall, offsetMins);
+            ev.endCall = addMinutesToTime(ev.endCall, offsetMins);
+          }
+          affectedCount++;
+        }
+      });
+
+      saveState();
+      renderAll();
+      showToast(`批量完成：${formatDisplayTime(fromTime)} 起共 ${affectedCount} 個項目已${offsetMins > 0 ? '延後' : '提早'} ${Math.abs(offsetMins)} 分鐘`);
+    }
+
+    function saveCallRules() {
+      appState.callRules.trackStart = parseInt(document.getElementById('rule-track-start').value, 10) || 20;
+      appState.callRules.trackEnd = parseInt(document.getElementById('rule-track-end').value, 10) || 10;
+      appState.callRules.fieldStart = parseInt(document.getElementById('rule-field-start').value, 10) || 35;
+      appState.callRules.fieldEnd = parseInt(document.getElementById('rule-field-end').value, 10) || 25;
+      onEventTypeOrTimeChange();
+      saveState();
+    }
+
+    function recalculateAllCallTimesByRule() {
+      saveCallRules();
+      const day = getActiveDay();
+      day.events.forEach(ev => {
+        const calls = calculateDefaultCallTimes(ev.time, ev.type || 'track');
+        ev.startCall = calls.startCall;
+        ev.endCall = calls.endCall;
+      });
+      saveState();
+      renderAll();
+      showToast(`已依最新檢錄規則重算當日全部 ${day.events.length} 個項目`);
+    }
+
+    // =========================================================================
+    // 7. DAYS, METADATA & AGE GROUP MANAGEMENT
+    // =========================================================================
+    function switchDay(dayId) {
+      appState.activeDayId = dayId;
+      resetEventForm();
+      saveState();
+      renderAll();
+    }
+
+    function addNewDay() {
+      const nextNum = appState.days.length + 1;
+      const newId = 'day' + Date.now();
+      appState.days.push({
+        id: newId,
+        label: `Day ${nextNum}`,
+        date: '14/9/2026',
+        events: []
+      });
+      appState.activeDayId = newId;
+      saveState();
+      renderAll();
+      showToast(`已新增賽程日：Day ${nextNum}`);
+    }
+
+    function deleteCurrentDay() {
+      if (appState.days.length <= 1) {
+        showToast('至少需保留一個賽程日', 'warn');
+        return;
+      }
+      const day = getActiveDay();
+      openConfirmModal(`確定要刪除「${day.label}」及其所有賽程資料嗎？`, () => {
+        appState.days = appState.days.filter(d => d.id !== day.id);
+        appState.activeDayId = appState.days[0].id;
+        saveState();
+        renderAll();
+        showToast(`已刪除 ${day.label}`, 'warn');
+      });
+    }
+
+    function updateMetaFromInputs() {
+      appState.meta.titleZh = document.getElementById('meta-title-zh').value;
+      appState.meta.titleEn = document.getElementById('meta-title-en').value;
+      appState.meta.venue = document.getElementById('meta-venue').value;
+      appState.meta.topNotice = document.getElementById('meta-top-notice').value;
+      appState.meta.footerNotice = document.getElementById('meta-footer-notice').value;
+      saveState();
+      renderPreviewHeaderAndFooter();
+    }
+
+    function updateCurrentDayMeta() {
+      const day = getActiveDay();
+      day.date = document.getElementById('meta-day-date').value;
+      day.label = document.getElementById('meta-day-label').value || day.label;
+      saveState();
+      renderDayTabs();
+      renderPreviewHeaderAndFooter();
+    }
+
+    function toggleRowViewMode() {
+      appState.rowViewMode = appState.rowViewMode === 'detailed' ? 'merged' : 'detailed';
+      saveState();
+      renderAll();
+    }
+
+    function setHighlightGroup(groupId) {
+      appState.highlightGroupId = groupId;
+      saveState();
+      renderTimetableGrid();
+    }
+
+    function addAgeGroupColumn() {
+      const newId = 'ug-' + Date.now().toString(36);
+      appState.ageGroups.push({ id: newId, code: 'OPEN', year: '2006+' });
+      saveState();
+      renderAll();
+      showToast('已新增年齡組別欄位');
+    }
+
+    function updateAgeGroupField(idx, field, value) {
+      if (appState.ageGroups[idx]) {
+        appState.ageGroups[idx][field] = value;
+        saveState();
+        renderAll();
+      }
+    }
+
+    function removeAgeGroupColumn(idx) {
+      if (appState.ageGroups.length <= 1) {
+        showToast('至少需保留一個年齡組別', 'warn');
+        return;
+      }
+      appState.ageGroups.splice(idx, 1);
+      saveState();
+      renderAll();
+    }
+
+    function resetToDefaultTemplate() {
+      appState = createInitialState();
+      saveState();
+      resetEventForm();
+      renderAll();
+      showToast('已還原為香港青少年田徑分齡賽2026 (5) 預設範本');
+    }
+
+    // =========================================================================
+    // 8. EXPORT / IMPORT (CSV & JSON)
+    // =========================================================================
+    function exportJSON() {
+      const dataStr = JSON.stringify(appState, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `athletics_timetable_${getActiveDay().label.replace(/\s+/g, '_')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('已匯出 JSON 設定檔');
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
         try {
-            const savedLang = localStorage.getItem("mtr_preferred_lang");
-            if (savedLang === "TC" || savedLang === "EN") {
-                currentLang = savedLang;
-            }
-        } catch (e) {}
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed.days || !parsed.ageGroups) {
+            throw new Error('Invalid format');
+          }
+          appState = parsed;
+          saveState();
+          renderAll();
+          showToast('成功匯入 JSON 時間表設定！');
+        } catch (err) {
+          showToast('JSON 檔案格式不正確，匯入失敗', 'warn');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
 
-        const I18N = {
-            TC: {
-                title: "🚇 港鐵全線跨線轉乘看板",
-                langBtn: "Eng",
-                fontLabels: ["標準", "大", "特大"],
-                connecting: "正在連線港鐵伺服器...",
-                lastUpdate: "最後更新：",
-                presetTitle: "⭐ 預設常用路線 (點擊一鍵查詢)",
-                savePreset: "+ 儲存目前路線",
-                savedMsg: "已儲存此預設路線！",
-                existMsg: "此路線已在預設清單中。",
-                originLabel: "起點站 (選擇路線及車站)",
-                destLabel: "終點站 (選擇路線及車站)",
-                swapText: "起終點互換 (回程查詢)",
-                sameStation: "起點站與終點站相同",
-                stopsUnit: "個站",
-                totalPrefix: "共 ",
-                directText: "直達 (0 次轉乘)",
-                transferText: (n) => `轉乘 ${n} 次`,
-                estTime: (m) => `總車程約 ${m} 分鐘`,
-                towards: "往",
-                toDest: "往",
-                plat: "號月台",
-                dep: "開出",
-                arr: "抵達",
-                departing: "正在離開 🚆",
-                arriving: "即將到達 🚆",
-                mins: "分鐘",
-                catchThis: "建議乘搭此班",
-                shortTurn: (s) => `⚠️ 需於${s}轉車`,
-                transferWalk: (sta, line, mins) => `🚶 於【${sta}】轉乘 ${line}（步行約 ${mins} 分鐘）`,
-                loading: "載入即時班次中...",
-                noTrains: "目前沒有即將開出的班次（已過尾班車）",
-                apiErr: "暫無即時資料",
-                sysUnavail: "系統暫時未能提供資料",
-                connErr: "連線異常，10秒後自動重試",
-                firstTrain: (sta) => `🌅 【${sta}】頭班車開出`,
-                lastTrain: (sta) => `🌃 【${sta}】尾班車開出`,
-                footerNote: "每 10 秒自動刷新 ｜ 港鐵規定尾班車開出前 5 分鐘停止入閘"
-            },
-            EN: {
-                title: "🚇 MTR Live & Transfer",
-                langBtn: "中",
-                fontLabels: ["A", "A+", "A++"],
-                connecting: "Connecting to MTR API...",
-                lastUpdate: "Last update: ",
-                presetTitle: "⭐ Preset Routes (Tap to view)",
-                savePreset: "+ Save Route",
-                savedMsg: "Route saved to presets!",
-                existMsg: "Route already exists in presets.",
-                originLabel: "Origin (Select Line & Station)",
-                destLabel: "Destination (Select Line & Station)",
-                swapText: "Swap Origin & Destination",
-                sameStation: "Origin and destination are the same",
-                stopsUnit: "stops",
-                totalPrefix: "",
-                directText: "Direct (0 transfers)",
-                transferText: (n) => `${n} transfer${n > 1 ? 's' : ''}`,
-                estTime: (m) => `Est. ${m} mins`,
-                towards: "Towards",
-                toDest: "To",
-                plat: "Platform",
-                dep: "Dep",
-                arr: "Arr",
-                departing: "Departing 🚆",
-                arriving: "Arriving 🚆",
-                mins: "mins",
-                catchThis: "Recommended",
-                shortTurn: (s) => `⚠️ Change at ${s}`,
-                transferWalk: (sta, line, mins) => `🚶 Change at [${sta}] to ${line} (~${mins} mins walk)`,
-                loading: "Loading live trains...",
-                noTrains: "No upcoming trains (After last train)",
-                apiErr: "No live data available",
-                sysUnavail: "System temporarily unable to provide data",
-                connErr: "Connection error, retrying in 10s",
-                firstTrain: (sta) => `🌅 [${sta}] First Train`,
-                lastTrain: (sta) => `🌃 [${sta}] Last Train`,
-                footerNote: "Auto-refreshes every 10s ｜ Entry gates close 5 mins before last train"
+    function exportCSV() {
+      const day = getActiveDay();
+      const sorted = [...day.events].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+      const groupMap = {};
+      appState.ageGroups.forEach(g => { groupMap[g.id] = `${g.code} (${g.year})`; });
+
+      const rows = [
+        ['Day', 'Date', 'Competition Time', 'Start of Call', 'End of Call', 'Gender', 'Age Group', 'Event Name', 'Type']
+      ];
+
+      sorted.forEach(ev => {
+        rows.push([
+          day.label,
+          day.date,
+          formatDisplayTime(ev.time),
+          formatDisplayTime(ev.startCall),
+          formatDisplayTime(ev.endCall),
+          ev.gender === 'girls' ? 'Girls 女子' : 'Boys 男子',
+          groupMap[ev.ageGroup] || ev.ageGroup,
+          `"${ev.name.replace(/"/g, '""')}"`,
+          ev.type
+        ]);
+      });
+
+      const csvContent = '\uFEFF' + rows.map(r => r.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `athletics_schedule_${day.label.replace(/\s+/g, '_')}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('已匯出 CSV 賽程表 (支援 Excel 開啟)');
+    }
+
+    // =========================================================================
+    // 9. RENDERING ENGINE
+    // =========================================================================
+    function renderAll() {
+      renderDayTabs();
+      syncSidebarInputs();
+      renderSidebarEventList();
+      renderPreviewHeaderAndFooter();
+      renderTimetableGrid();
+      lucide.createIcons();
+    }
+
+    function renderDayTabs() {
+      const container = document.getElementById('day-tabs-container');
+      container.innerHTML = appState.days.map(day => {
+        const isActive = day.id === appState.activeDayId;
+        return `
+          <button onclick="switchDay('${day.id}')" class="px-2.5 py-1 text-xs font-bold rounded-md transition ${isActive ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-700'}">
+            ${day.label}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function syncSidebarInputs() {
+      const day = getActiveDay();
+
+      // View mode button label
+      document.getElementById('view-mode-label').textContent =
+        appState.rowViewMode === 'detailed' ? '檢視：逐項精準檢錄列' : '檢視：同比賽時間合併列';
+
+      // Meta inputs
+      document.getElementById('meta-title-zh').value = appState.meta.titleZh;
+      document.getElementById('meta-title-en').value = appState.meta.titleEn;
+      document.getElementById('meta-venue').value = appState.meta.venue;
+      document.getElementById('meta-top-notice').value = appState.meta.topNotice;
+      document.getElementById('meta-footer-notice').value = appState.meta.footerNotice;
+      document.getElementById('meta-day-date').value = day.date;
+      document.getElementById('meta-day-label').value = day.label;
+
+      // Call rules inputs
+      document.getElementById('rule-track-start').value = appState.callRules.trackStart;
+      document.getElementById('rule-track-end').value = appState.callRules.trackEnd;
+      document.getElementById('rule-field-start').value = appState.callRules.fieldStart;
+      document.getElementById('rule-field-end').value = appState.callRules.fieldEnd;
+
+      // Age group dropdowns
+      const ageSelect = document.getElementById('input-age-group');
+      const currentSelectedAge = ageSelect.value;
+      ageSelect.innerHTML = appState.ageGroups.map(g =>
+        `<option value="${g.id}">${g.code} (${g.year})</option>`
+      ).join('');
+      if (currentSelectedAge && appState.ageGroups.some(g => g.id === currentSelectedAge)) {
+        ageSelect.value = currentSelectedAge;
+      }
+
+      const highlightSelect = document.getElementById('highlight-group-select');
+      highlightSelect.innerHTML = `<option value="">顯示全部組別 (無高亮篩選)</option>` +
+        appState.ageGroups.map(g =>
+          `<option value="${g.id}" ${appState.highlightGroupId === g.id ? 'selected' : ''}>高亮顯示：${g.code} (${g.year})</option>`
+        ).join('');
+
+      // Age Groups Editor List in Tab 4
+      const groupListEl = document.getElementById('age-groups-editor-list');
+      groupListEl.innerHTML = appState.ageGroups.map((g, idx) => `
+        <div class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-slate-200 text-xs">
+          <input type="text" value="${g.code}" onchange="updateAgeGroupField(${idx}, 'code', this.value)" class="w-16 font-bold border border-slate-300 rounded px-1.5 py-0.5 text-center" placeholder="組別" />
+          <input type="text" value="${g.year}" onchange="updateAgeGroupField(${idx}, 'year', this.value)" class="flex-1 font-medium border border-slate-300 rounded px-1.5 py-0.5" placeholder="出生年份" />
+          <button type="button" onclick="removeAgeGroupColumn(${idx})" class="p-1 text-slate-400 hover:text-rose-600" title="移除組別">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function renderSidebarEventList() {
+      const day = getActiveDay();
+      const query = (document.getElementById('quick-search-event').value || '').toLowerCase();
+      const sorted = [...day.events].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+      document.getElementById('event-count-badge').textContent = sorted.length;
+
+      const filtered = query
+        ? sorted.filter(ev => ev.name.toLowerCase().includes(query) || ev.time.includes(query))
+        : sorted;
+
+      const listEl = document.getElementById('sidebar-event-list');
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="text-center text-xs text-slate-400 py-6">尚無符合條件的賽程項目</div>`;
+        return;
+      }
+
+      const groupMap = {};
+      appState.ageGroups.forEach(g => { groupMap[g.id] = g.code; });
+
+      listEl.innerHTML = filtered.map(ev => {
+        const isGirls = ev.gender === 'girls';
+        const genderBadge = isGirls
+          ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold text-[10px]">女 ${groupMap[ev.ageGroup] || ''}</span>`
+          : `<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold text-[10px]">男 ${groupMap[ev.ageGroup] || ''}</span>`;
+
+        return `
+          <div onclick="loadEventIntoEditor('${ev.id}')" class="group flex items-center justify-between gap-2 p-2 rounded-lg bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-xs cursor-pointer transition">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-black text-slate-900 tabular-nums">${formatDisplayTime(ev.time)}</span>
+                ${genderBadge}
+                <span class="text-[10px] text-slate-400 tabular-nums">檢:${formatDisplayTime(ev.startCall)}-${formatDisplayTime(ev.endCall)}</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-700 truncate mt-0.5">${ev.name}</div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="nudgeSingleEvent('${ev.id}', -5, event)" class="px-1.5 py-1 text-[10px] font-bold rounded bg-slate-100 hover:bg-slate-200 text-slate-700" title="提早5分鐘">-5m</button>
+              <button type="button" onclick="nudgeSingleEvent('${ev.id}', 5, event)" class="px-1.5 py-1 text-[10px] font-bold rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700" title="延後5分鐘">+5m</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPreviewHeaderAndFooter() {
+      const day = getActiveDay();
+      document.getElementById('preview-title-zh').textContent = appState.meta.titleZh;
+      document.getElementById('preview-title-en').textContent = appState.meta.titleEn;
+      document.getElementById('preview-top-notice').textContent = appState.meta.topNotice;
+      document.getElementById('preview-footer-notice').textContent = appState.meta.footerNotice;
+      document.getElementById('preview-date').textContent = day.date;
+      document.getElementById('preview-day-badge').textContent = day.label.toUpperCase();
+      document.getElementById('preview-venue').textContent = appState.meta.venue;
+    }
+
+    function getEventTypeBadgeStyle(type) {
+      switch (type) {
+        case 'field':
+          return { dot: 'bg-purple-500', bg: 'bg-purple-50/90 border-purple-200 text-purple-950' };
+        case 'relay':
+          return { dot: 'bg-amber-500', bg: 'bg-amber-50/90 border-amber-300 text-amber-950 font-bold' };
+        case 'combined':
+          return { dot: 'bg-rose-500', bg: 'bg-rose-50/90 border-rose-200 text-rose-950' };
+        case 'track':
+        default:
+          return { dot: 'bg-emerald-500', bg: 'bg-emerald-50/80 border-emerald-200 text-slate-900' };
+      }
+    }
+
+    function renderTimetableGrid() {
+      const day = getActiveDay();
+      const groups = appState.ageGroups;
+      const gCount = groups.length;
+      const highlightGroup = appState.highlightGroupId;
+
+      // 1. Render Dual-Sided Multi-Tier Header (Left Time | Girls | Boys | Right Time)
+      const thead = document.getElementById('timetable-thead');
+      const timeHeaderCols = `
+        <th rowspan="2" class="bg-slate-800 text-white font-bold w-14 leading-tight">Competition<br/>Time</th>
+        <th rowspan="2" class="bg-slate-700 text-slate-100 font-semibold w-12 leading-tight">Start of<br/>Call</th>
+        <th rowspan="2" class="bg-slate-700 text-slate-100 font-semibold w-12 leading-tight">End of<br/>Call</th>
+      `;
+
+      const girlsGroupHeaders = groups.map(g => {
+        const isDimmed = highlightGroup && highlightGroup !== g.id;
+        return `
+          <th class="bg-rose-100 text-rose-950 font-bold min-w-[74px] leading-tight transition-opacity ${isDimmed ? 'opacity-35' : ''}">
+            <div class="text-xs font-black">${g.code}</div>
+            <div class="text-[10px] font-medium text-rose-800">${g.year}</div>
+          </th>
+        `;
+      }).join('');
+
+      const boysGroupHeaders = groups.map(g => {
+        const isDimmed = highlightGroup && highlightGroup !== g.id;
+        return `
+          <th class="bg-sky-100 text-sky-950 font-bold min-w-[74px] leading-tight transition-opacity ${isDimmed ? 'opacity-35' : ''}">
+            <div class="text-xs font-black">${g.code}</div>
+            <div class="text-[10px] font-medium text-sky-800">${g.year}</div>
+          </th>
+        `;
+      }).join('');
+
+      thead.innerHTML = `
+        <tr>
+          ${timeHeaderCols}
+          <th colspan="${gCount}" class="bg-rose-600 text-white font-black text-xs tracking-wider py-1.5">
+            女子組 GIRLS
+          </th>
+          <th colspan="${gCount}" class="bg-sky-700 text-white font-black text-xs tracking-wider py-1.5">
+            男子組 BOYS
+          </th>
+          ${timeHeaderCols}
+        </tr>
+        <tr>
+          ${girlsGroupHeaders}
+          ${boysGroupHeaders}
+        </tr>
+      `;
+
+      // 2. Group Events into Sorted Rows
+      const tbody = document.getElementById('timetable-tbody');
+      if (!day.events || day.events.length === 0) {
+        const totalCols = 6 + (gCount * 2);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${totalCols}" class="py-12 text-center text-slate-400 text-sm">
+              此賽程日目前尚無項目，請從左側工具欄新增賽程項目。
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const sortedEvents = [...day.events].sort((a, b) => {
+        const diff = timeToMinutes(a.time) - timeToMinutes(b.time);
+        if (diff !== 0) return diff;
+        return timeToMinutes(a.startCall) - timeToMinutes(b.startCall);
+      });
+
+      const isMergedMode = appState.rowViewMode === 'merged';
+      const rowBuckets = [];
+      const bucketMap = new Map();
+
+      sortedEvents.forEach(ev => {
+        const key = isMergedMode
+          ? `${ev.time}`
+          : `${ev.time}|${ev.startCall}|${ev.endCall}`;
+
+        if (!bucketMap.has(key)) {
+          const bucket = {
+            time: ev.time,
+            startCall: ev.startCall,
+            endCall: ev.endCall,
+            events: []
+          };
+          bucketMap.set(key, bucket);
+          rowBuckets.push(bucket);
+        }
+        bucketMap.get(key).events.push(ev);
+      });
+
+      // 3. Render Rows
+      tbody.innerHTML = rowBuckets.map((bucket, rowIdx) => {
+        const rowBg = rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70';
+
+        // Check if merged mode has multiple distinct call times in same row
+        const distinctCalls = new Set(bucket.events.map(e => `${e.startCall}-${e.endCall}`));
+        const hasMixedCalls = isMergedMode && distinctCalls.size > 1;
+
+        const startCallDisplay = hasMixedCalls ? '見項目' : formatDisplayTime(bucket.startCall);
+        const endCallDisplay = hasMixedCalls ? '見項目' : formatDisplayTime(bucket.endCall);
+
+        const timeCellsHtml = `
+          <td class="bg-slate-100/90 font-black text-slate-900 relative group/time whitespace-nowrap">
+            <span>${formatDisplayTime(bucket.time)}</span>
+            <div class="no-print hidden group-hover/time:flex items-center justify-center gap-0.5 absolute inset-0 bg-slate-900/90 text-white text-[10px]">
+              <button onclick="nudgeTimeSlotRow('${bucket.time}', '${bucket.startCall}', '${bucket.endCall}', -5, ${isMergedMode})" class="px-1 py-0.5 hover:bg-rose-600 rounded font-bold" title="整列提早5分鐘">-5</button>
+              <button onclick="nudgeTimeSlotRow('${bucket.time}', '${bucket.startCall}', '${bucket.endCall}', 5, ${isMergedMode})" class="px-1 py-0.5 hover:bg-emerald-600 rounded font-bold" title="整列延後5分鐘">+5</button>
+            </div>
+          </td>
+          <td class="text-slate-600 font-medium whitespace-nowrap">${startCallDisplay}</td>
+          <td class="text-slate-600 font-medium whitespace-nowrap">${endCallDisplay}</td>
+        `;
+
+        const renderGenderCells = (gender) => {
+          return groups.map(g => {
+            const cellEvents = bucket.events.filter(e => e.gender === gender && e.ageGroup === g.id);
+            const isDimmed = highlightGroup && highlightGroup !== g.id;
+            const isHighlighted = highlightGroup && highlightGroup === g.id;
+
+            const cellHighlightClass = isHighlighted
+              ? (gender === 'girls' ? 'bg-rose-50/80' : 'bg-sky-50/80')
+              : '';
+
+            if (cellEvents.length === 0) {
+              return `<td class="${cellHighlightClass} ${isDimmed ? 'opacity-30' : ''}"></td>`;
             }
+
+            const chips = cellEvents.map(ev => {
+              const style = getEventTypeBadgeStyle(ev.type);
+              const callHint = hasMixedCalls
+                ? `<div class="text-[9px] text-slate-500 font-normal">檢:${formatDisplayTime(ev.startCall)}-${formatDisplayTime(ev.endCall)}</div>`
+                : '';
+              return `
+                <div onclick="loadEventIntoEditor('${ev.id}')" title="點擊編輯：${ev.name}&#10;比賽時間：${formatDisplayTime(ev.time)}&#10;檢錄時間：${formatDisplayTime(ev.startCall)} - ${formatDisplayTime(ev.endCall)}" class="event-chip cursor-pointer rounded px-1.5 py-1 border text-[11px] leading-tight font-semibold ${style.bg}">
+                  <div class="flex items-center justify-center gap-1">
+                    <span class="event-type-dot w-1.5 h-1.5 rounded-full shrink-0 ${style.dot}"></span>
+                    <span>${ev.name}</span>
+                  </div>
+                  ${callHint}
+                </div>
+              `;
+            }).join('<div class="h-1"></div>');
+
+            return `<td class="p-1 ${cellHighlightClass} ${isDimmed ? 'opacity-30' : ''}">${chips}</td>`;
+          }).join('');
         };
 
-        
-        
-        // Station-specific First Train departure times (exact MTR published first train times at each station)
-        const STATION_FIRST_TRAINS = {
-            ISL: {
-                UP: { // Towards Chai Wan
-                    KET: "06:00", HKU: "06:02", SYP: "06:04", SHW: "06:06", CEN: "06:08",
-                    ADM: "06:10", WAC: "06:12", CAB: "06:14", TIH: "06:16", FOH: "06:18",
-                    NOP: "06:20", QUB: "06:22", TAK: "06:24", SWH: "06:26", SKW: "06:28",
-                    HFC: "06:31", CHW: "--:--"
-                },
-                DOWN: { // Towards Kennedy Town
-                    CHW: "05:55", HFC: "05:58", SKW: "06:01", SWH: "06:03", TAK: "06:05",
-                    QUB: "06:07", NOP: "06:09", FOH: "06:11", TIH: "06:13", CAB: "06:15",
-                    WAC: "06:17", ADM: "06:19", CEN: "06:22", SHW: "06:24", SYP: "06:26",
-                    HKU: "06:28", KET: "--:--"
-                }
-            },
-            TWL: {
-                UP: { // Towards Tsuen Wan
-                    CEN: "06:06", ADM: "06:08", TST: "06:11", JOR: "06:13", YMT: "06:15",
-                    MOK: "06:17", PRE: "06:19", SSP: "06:21", CSW: "06:23", LCK: "06:25",
-                    MEF: "06:27", LAK: "06:30", KWF: "06:32", KWH: "06:34", TWH: "06:36",
-                    TSW: "--:--"
-                },
-                DOWN: { // Towards Central
-                    TSW: "06:00", TWH: "06:03", KWH: "06:05", KWF: "06:07", LAK: "06:09",
-                    MEF: "06:12", LCK: "06:14", CSW: "06:16", SSP: "06:18", PRE: "06:20",
-                    MOK: "06:22", YMT: "06:24", JOR: "06:26", TST: "06:28", ADM: "06:31",
-                    CEN: "--:--"
-                }
-            },
-            KTL: {
-                UP: { // Towards Tiu Keng Leng
-                    WHA: "06:10", HOM: "06:12", YMT: "06:15", MOK: "06:17", PRE: "06:19",
-                    SKM: "06:21", KOT: "06:24", LOF: "06:26", WTS: "06:28", DIH: "06:30",
-                    CHH: "06:32", KOB: "06:35", NTK: "06:37", KWT: "06:39", LAT: "06:41",
-                    YAT: "06:44", TIK: "--:--"
-                },
-                DOWN: { // Towards Whampoa
-                    TIK: "06:00", YAT: "06:03", LAT: "06:06", KWT: "06:08", NTK: "06:10",
-                    KOB: "06:12", CHH: "06:15", DIH: "06:17", WTS: "06:19", LOF: "06:21",
-                    KOT: "06:23", SKM: "06:26", PRE: "06:28", MOK: "06:30", YMT: "06:32",
-                    HOM: "06:35", WHA: "--:--"
-                }
-            },
-            TML: {
-                UP: { // Towards Tuen Mun
-                    WKS: "05:40", MOS: "05:42", HEO: "05:44", TSH: "05:46", SHM: "05:49",
-                    CIO: "05:51", STW: "05:53", CKT: "05:55", TAW: "05:58", HIK: "06:01",
-                    DIH: "06:06", KAT: "06:08", SUW: "06:10", TKW: "06:12", HOM: "06:14",
-                    HUH: "06:17", ETS: "06:20", AUS: "06:22", NAC: "06:25", MEF: "06:28",
-                    TWW: "06:32", KSR: "06:38", YUL: "06:42", LOP: "06:44", TIS: "06:47",
-                    SIH: "06:50", TUM: "--:--"
-                },
-                DOWN: { // Towards Wu Kai Sha
-                    TUM: "05:45", SIH: "05:48", TIS: "05:51", LOP: "05:54", YUL: "05:56",
-                    KSR: "06:00", TWW: "06:06", MEF: "06:10", NAC: "06:13", AUS: "06:15",
-                    ETS: "06:18", HUH: "06:21", HOM: "06:24", TKW: "06:26", SUW: "06:28",
-                    KAT: "06:30", DIH: "06:32", HIK: "06:37", TAW: "06:40", CKT: "06:43",
-                    STW: "06:45", CIO: "06:47", SHM: "06:49", TSH: "06:52", HEO: "06:54",
-                    MOS: "06:56", WKS: "--:--"
-                }
-            },
-            EAL: {
-                UP: { // Towards Lo Wu / Lok Ma Chau
-                    ADM: "05:25", EXC: "05:28", HUH: "05:32", MKK: "05:35", KOT: "05:38",
-                    TAW: "05:42", SHT: "05:45", FOT: "05:48", RAC: "05:50", UNI: "05:53",
-                    TAP: "05:58", TWO: "06:00", FAN: "06:05", SHS: "06:08",
-                    LOW: "--:--", LMC: "--:--"
-                },
-                DOWN: { // Towards Admiralty
-                    LOW: "05:55", LMC: "06:38", SHS: "06:02", FAN: "06:04", TWO: "06:09",
-                    TAP: "06:11", UNI: "06:16", RAC: "06:19", FOT: "06:21", SHT: "06:24",
-                    TAW: "06:27", KOT: "06:31", MKK: "06:34", HUH: "06:37", EXC: "06:41",
-                    ADM: "--:--"
-                }
-            },
-            SIL: {
-                UP: { // Towards South Horizons
-                    ADM: "06:11", OCP: "06:15", WCH: "06:17", LET: "06:19", SOH: "--:--"
-                },
-                DOWN: { // Towards Admiralty
-                    SOH: "06:00", LET: "06:02", WCH: "06:04", OCP: "06:06", ADM: "--:--"
-                }
-            },
-            TKL: {
-                UP: { // Towards Po Lam / LOHAS Park
-                    NOP: "06:13", QUB: "06:15", YAT: "06:18", TIK: "06:21",
-                    TKO: "06:24", HAH: "06:26", POA: "--:--", LHP: "--:--"
-                },
-                DOWN: { // Towards North Point
-                    POA: "06:00", LHP: "05:57", HAH: "06:02", TKO: "06:04", TIK: "06:07",
-                    YAT: "06:10", QUB: "06:13", NOP: "--:--"
-                }
-            },
-            TCL: {
-                UP: { // Towards Tung Chung
-                    HOK: "06:01", KOW: "06:04", OLY: "06:07", NAC: "06:09", LAK: "06:12",
-                    TSY: "06:15", SUN: "06:22", TUC: "--:--"
-                },
-                DOWN: { // Towards Hong Kong
-                    TUC: "06:02", SUN: "06:08", TSY: "06:15", LAK: "06:18", NAC: "06:21",
-                    OLY: "06:23", KOW: "06:26", HOK: "--:--"
-                }
-            },
-            AEL: {
-                UP: { // Towards AsiaWorld-Expo
-                    HOK: "05:50", KOW: "05:53", TSY: "05:57", AIR: "06:11", AWE: "--:--"
-                },
-                DOWN: { // Towards Hong Kong
-                    AWE: "05:54", AIR: "05:57", TSY: "06:11", KOW: "06:15", HOK: "--:--"
-                }
-            },
-            DRL: {
-                UP: { // Towards Disneyland
-                    SUN: "06:15", DIS: "--:--"
-                },
-                DOWN: { // Towards Sunny Bay
-                    DIS: "06:20", SUN: "--:--"
-                }
-            }
-        };
-
-        function getStationFirstTrain(lineCode, dir, staCode) {
-            return STATION_FIRST_TRAINS[lineCode]?.[dir]?.[staCode] || "--:--";
-        }
-
-        // Station-specific Last Train departure times (exact MTR published last train times at each station)
-        const STATION_LAST_TRAINS = {
-            ISL: {
-                UP: { // Towards Chai Wan
-                    KET: "00:50", HKU: "00:52", SYP: "00:54", SHW: "00:56", CEN: "00:58",
-                    ADM: "01:00", WAC: "01:02", CAB: "01:04", TIH: "01:06", FOH: "01:08",
-                    NOP: "01:10", QUB: "01:12", TAK: "01:14", SWH: "01:16", SKW: "01:18",
-                    HFC: "01:21", CHW: "--:--"
-                },
-                DOWN: { // Towards Kennedy Town
-                    CHW: "00:35", HFC: "00:38", SKW: "00:41", SWH: "00:43", TAK: "00:45",
-                    QUB: "00:47", NOP: "00:49", FOH: "00:51", TIH: "00:53", CAB: "00:55",
-                    WAC: "00:57", ADM: "00:59", CEN: "01:02", SHW: "01:04", SYP: "01:06",
-                    HKU: "01:08", KET: "--:--"
-                }
-            },
-            TWL: {
-                UP: { // Towards Tsuen Wan
-                    CEN: "00:54", ADM: "00:56", TST: "00:59", JOR: "01:01", YMT: "01:03",
-                    MOK: "01:05", PRE: "01:07", SSP: "01:09", CSW: "01:11", LCK: "01:13",
-                    MEF: "01:15", LAK: "01:18", KWF: "01:20", KWH: "01:22", TWH: "01:24",
-                    TSW: "--:--"
-                },
-                DOWN: { // Towards Central
-                    TSW: "00:30", TWH: "00:33", KWH: "00:35", KWF: "00:37", LAK: "00:39",
-                    MEF: "00:42", LCK: "00:44", CSW: "00:46", SSP: "00:48", PRE: "00:50",
-                    MOK: "00:52", YMT: "00:54", JOR: "00:56", TST: "00:58", ADM: "01:01",
-                    CEN: "--:--"
-                }
-            },
-            KTL: {
-                UP: { // Towards Tiu Keng Leng
-                    WHA: "00:40", HOM: "00:42", YMT: "00:45", MOK: "00:47", PRE: "00:49",
-                    SKM: "00:51", KOT: "00:54", LOF: "00:56", WTS: "00:58", DIH: "01:00",
-                    CHH: "01:02", KOB: "01:05", NTK: "01:07", KWT: "01:09", LAT: "01:11",
-                    YAT: "01:14", TIK: "--:--"
-                },
-                DOWN: { // Towards Whampoa
-                    TIK: "00:32", YAT: "00:35", LAT: "00:38", KWT: "00:40", NTK: "00:42",
-                    KOB: "00:44", CHH: "00:47", DIH: "00:49", WTS: "00:51", LOF: "00:53",
-                    KOT: "00:55", SKM: "00:58", PRE: "01:00", MOK: "01:02", YMT: "01:04",
-                    HOM: "01:07", WHA: "--:--"
-                }
-            },
-            TML: {
-                UP: { // Towards Tuen Mun
-                    WKS: "00:08", MOS: "00:10", HEO: "00:12", TSH: "00:14", SHM: "00:17",
-                    CIO: "00:19", STW: "00:21", CKT: "00:23", TAW: "00:26", HIK: "00:29",
-                    DIH: "00:34", KAT: "00:36", SUW: "00:38", TKW: "00:40", HOM: "00:42",
-                    HUH: "00:45", ETS: "00:48", AUS: "00:50", NAC: "00:53", MEF: "00:56",
-                    TWW: "01:00", KSR: "01:06", YUL: "01:10", LOP: "01:12", TIS: "01:15",
-                    SIH: "01:18", TUM: "--:--"
-                },
-                DOWN: { // Towards Wu Kai Sha
-                    TUM: "00:12", SIH: "00:15", TIS: "00:18", LOP: "00:21", YUL: "00:23",
-                    KSR: "00:27", TWW: "00:33", MEF: "00:37", NAC: "00:40", AUS: "00:42",
-                    ETS: "00:45", HUH: "00:48", HOM: "00:51", TKW: "00:53", SUW: "00:55",
-                    KAT: "00:57", DIH: "00:59", HIK: "01:04", TAW: "01:07", CKT: "01:10",
-                    STW: "01:12", CIO: "01:14", SHM: "01:16", TSH: "01:19", HEO: "01:21",
-                    MOS: "01:23", WKS: "--:--"
-                }
-            },
-            EAL: {
-                UP: { // Towards Lo Wu / Lok Ma Chau
-                    ADM: "23:01 (羅湖) / 21:35 (落馬洲)", EXC: "23:04 (羅湖) / 21:38 (落馬洲)",
-                    HUH: "23:08 (羅湖) / 21:42 (落馬洲)", MKK: "23:11 (羅湖) / 21:45 (落馬洲)",
-                    KOT: "23:14 (羅湖) / 21:48 (落馬洲)", TAW: "23:18 (羅湖) / 21:52 (落馬洲)",
-                    SHT: "23:21 (羅湖) / 21:55 (落馬洲)", FOT: "23:24 (羅湖) / 21:58 (落馬洲)",
-                    RAC: "23:26 (羅湖) / 22:00 (落馬洲)", UNI: "23:29 (羅湖) / 22:03 (落馬洲)",
-                    TAP: "23:34 (羅湖) / 22:08 (落馬洲)", TWO: "23:36 (羅湖) / 22:10 (落馬洲)",
-                    FAN: "23:41 (羅湖) / 22:15 (落馬洲)", SHS: "23:44 (羅湖) / 22:18 (落馬洲)",
-                    LOW: "--:--", LMC: "--:--"
-                },
-                DOWN: { // Towards Admiralty
-                    LOW: "23:55", LMC: "22:55", SHS: "00:02", FAN: "00:04", TWO: "00:09",
-                    TAP: "00:11", UNI: "00:16", RAC: "00:19", FOT: "00:21", SHT: "00:24",
-                    TAW: "00:27", KOT: "00:31", MKK: "00:34", HUH: "00:37", EXC: "00:41",
-                    ADM: "--:--"
-                }
-            },
-            SIL: {
-                UP: { // Towards South Horizons
-                    ADM: "01:05", OCP: "01:09", WCH: "01:11", LET: "01:13", SOH: "--:--"
-                },
-                DOWN: { // Towards Admiralty
-                    SOH: "00:46", LET: "00:48", WCH: "00:50", OCP: "00:52", ADM: "--:--"
-                }
-            },
-            TKL: {
-                UP: { // Towards Po Lam / LOHAS Park
-                    NOP: "01:12 (寶琳) / 00:45 (康城)", QUB: "01:14 (寶琳) / 00:47 (康城)",
-                    YAT: "01:17 (寶琳) / 00:50 (康城)", TIK: "01:20 (寶琳) / 00:53 (康城)",
-                    TKO: "01:23 (寶琳) / 00:56 (康城)", HAH: "01:25 (寶琳)",
-                    POA: "--:--", LHP: "--:--"
-                },
-                DOWN: { // Towards North Point
-                    POA: "00:50", LHP: "00:48", HAH: "00:52", TKO: "00:54", TIK: "00:57",
-                    YAT: "01:00", QUB: "01:03", NOP: "--:--"
-                }
-            },
-            TCL: {
-                UP: { // Towards Tung Chung
-                    HOK: "00:50", KOW: "00:53", OLY: "00:56", NAC: "00:58", LAK: "01:01",
-                    TSY: "01:04", SUN: "01:11", TUC: "--:--"
-                },
-                DOWN: { // Towards Hong Kong
-                    TUC: "00:43", SUN: "00:49", TSY: "00:56", LAK: "00:59", NAC: "01:02",
-                    OLY: "01:04", KOW: "01:07", HOK: "--:--"
-                }
-            },
-            AEL: {
-                UP: { // Towards AsiaWorld-Expo
-                    HOK: "00:48", KOW: "00:51", TSY: "00:55", AIR: "01:09", AWE: "--:--"
-                },
-                DOWN: { // Towards Hong Kong
-                    AWE: "00:45", AIR: "00:48", TSY: "01:02", KOW: "01:06", HOK: "--:--"
-                }
-            },
-            DRL: {
-                UP: { // Towards Disneyland
-                    SUN: "00:45", DIS: "--:--"
-                },
-                DOWN: { // Towards Sunny Bay
-                    DIS: "00:40", SUN: "--:--"
-                }
-            }
-        };
-
-        function getStationLastTrain(lineCode, dir, staCode) {
-            const raw = STATION_LAST_TRAINS[lineCode]?.[dir]?.[staCode];
-            if (!raw) return "--:--";
-            if (currentLang === "EN") {
-                return raw
-                    .replace("羅湖", "Lo Wu")
-                    .replace("落馬洲", "LMC")
-                    .replace("寶琳", "Po Lam")
-                    .replace("康城", "LOHAS");
-            }
-            return raw;
-        }
-
-        // Full 10 MTR Lines with official colors, station sequences, and line terminal First/Last train hours
-        const LINES = {
-            TML: {
-                name: { TC: "屯馬綫", EN: "Tuen Ma Line" },
-                colorName: { TC: "啡色", EN: "Brown" },
-                color: "#9A3B26",
-                schedule: {
-                    UP:   { first: { TC: "05:40 (烏溪沙開)", EN: "05:40 (fr. Wu Kai Sha)" }, last: { TC: "00:08 (往屯門)", EN: "00:08 (to Tuen Mun)" } },
-                    DOWN: { first: { TC: "05:45 (屯門開)", EN: "05:45 (fr. Tuen Mun)" }, last: { TC: "00:12 (往烏溪沙)", EN: "00:12 (to Wu Kai Sha)" } }
-                },
-                stations: ["WKS","MOS","HEO","TSH","SHM","CIO","STW","CKT","TAW","HIK","DIH","KAT","SUW","TKW","HOM","HUH","ETS","AUS","NAC","MEF","TWW","KSR","YUL","LOP","TIS","SIH","TUM"],
-                times: [2,2,2,3,2,2,2,3,3,5,2,2,2,2,3,3,2,2,3,4,6,4,2,3,3,3]
-            },
-            EAL: {
-                name: { TC: "東鐵綫", EN: "East Rail Line" },
-                colorName: { TC: "淺藍色", EN: "Light Blue" },
-                color: "#5EB6E4",
-                schedule: {
-                    UP:   { first: { TC: "05:25 (金鐘開)", EN: "05:25 (fr. Admiralty)" }, last: { TC: "23:01(羅湖) / 21:35(落馬洲)", EN: "23:01(Lo Wu) / 21:35(LMC)" } },
-                    DOWN: { first: { TC: "05:55 (羅湖開)", EN: "05:55 (fr. Lo Wu)" }, last: { TC: "00:30 (往金鐘)", EN: "00:30 (to Admiralty)" } }
-                },
-                stations: ["ADM","EXC","HUH","MKK","KOT","TAW","SHT","FOT","RAC","UNI","TAP","TWO","FAN","SHS","LOW","LMC"],
-                times: [3,4,3,3,3,3,2,3,3,5,2,5,2,4,5],
-                branchSplit: "SHS",
-                branch1: ["LOW"],
-                branch2: ["LMC"]
-            },
-            KTL: {
-                name: { TC: "觀塘綫", EN: "Kwun Tong Line" },
-                colorName: { TC: "綠色", EN: "Green" },
-                color: "#00AB4E",
-                schedule: {
-                    UP:   { first: { TC: "06:10 (黃埔開)", EN: "06:10 (fr. Whampoa)" }, last: { TC: "00:40 (往調景嶺)", EN: "00:40 (to Tiu Keng Leng)" } },
-                    DOWN: { first: { TC: "06:00 (調景嶺開)", EN: "06:00 (fr. Tiu Keng Leng)" }, last: { TC: "00:32 (往黃埔)", EN: "00:32 (to Whampoa)" } }
-                },
-                stations: ["WHA","HOM","YMT","MOK","PRE","SKM","KOT","LOF","WTS","DIH","CHH","KOB","NTK","KWT","LAT","YAT","TIK"],
-                times: [2,2,2,2,2,3,2,2,2,2,3,2,2,2,3,3]
-            },
-            TWL: {
-                name: { TC: "荃灣綫", EN: "Tsuen Wan Line" },
-                colorName: { TC: "紅色", EN: "Red" },
-                color: "#E2231A",
-                schedule: {
-                    UP:   { first: { TC: "06:06 (中環開)", EN: "06:06 (fr. Central)" }, last: { TC: "00:54 (往荃灣)", EN: "00:54 (to Tsuen Wan)" } },
-                    DOWN: { first: { TC: "06:00 (荃灣開)", EN: "06:00 (fr. Tsuen Wan)" }, last: { TC: "00:30 (往中環)", EN: "00:30 (to Central)" } }
-                },
-                stations: ["CEN","ADM","TST","JOR","YMT","MOK","PRE","SSP","CSW","LCK","MEF","LAK","KWF","KWH","TWH","TSW"],
-                times: [2,3,2,2,2,2,2,2,2,2,3,2,2,2,3]
-            },
-            ISL: {
-                name: { TC: "港島綫", EN: "Island Line" },
-                colorName: { TC: "深藍色", EN: "Dark Blue" },
-                color: "#0075C9",
-                schedule: {
-                    UP:   { first: { TC: "06:00 (堅尼地城開)", EN: "06:00 (fr. Kennedy Town)" }, last: { TC: "00:50 (往柴灣)", EN: "00:50 (to Chai Wan)" } },
-                    DOWN: { first: { TC: "05:55 (柴灣開)", EN: "05:55 (fr. Chai Wan)" }, last: { TC: "00:35 (往堅尼地城)", EN: "00:35 (to Kennedy Town)" } }
-                },
-                stations: ["KET","HKU","SYP","SHW","CEN","ADM","WAC","CAB","TIH","FOH","NOP","QUB","TAK","SWH","SKW","HFC","CHW"],
-                times: [2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3]
-            },
-            SIL: {
-                name: { TC: "南港島綫", EN: "South Island Line" },
-                colorName: { TC: "淺綠色", EN: "Light Green" },
-                color: "#B5BD00",
-                schedule: {
-                    UP:   { first: { TC: "06:11 (金鐘開)", EN: "06:11 (fr. Admiralty)" }, last: { TC: "01:05 (往海怡半島)", EN: "01:05 (to South Horizons)" } },
-                    DOWN: { first: { TC: "06:00 (海怡半島開)", EN: "06:00 (fr. South Horizons)" }, last: { TC: "00:46 (往金鐘)", EN: "00:46 (to Admiralty)" } }
-                },
-                stations: ["ADM","OCP","WCH","LET","SOH"],
-                times: [4,2,2,2]
-            },
-            TKL: {
-                name: { TC: "將軍澳綫", EN: "Tseung Kwan O Line" },
-                colorName: { TC: "紫色", EN: "Purple" },
-                color: "#7D499D",
-                schedule: {
-                    UP:   { first: { TC: "06:13 (北角開)", EN: "06:13 (fr. North Point)" }, last: { TC: "01:12(寶琳) / 00:45(康城)", EN: "01:12(Po Lam) / 00:45(LOHAS)" } },
-                    DOWN: { first: { TC: "06:00 (寶琳開)", EN: "06:00 (fr. Po Lam)" }, last: { TC: "00:50 (往北角)", EN: "00:50 (to North Point)" } }
-                },
-                stations: ["NOP","QUB","YAT","TIK","TKO","HAH","POA","LHP"],
-                times: [2,3,3,3,2,2,4],
-                branchSplit: "TKO",
-                branch1: ["HAH","POA"],
-                branch2: ["LHP"]
-            },
-            TCL: {
-                name: { TC: "東涌綫", EN: "Tung Chung Line" },
-                colorName: { TC: "橙色", EN: "Orange" },
-                color: "#F38B00",
-                schedule: {
-                    UP:   { first: { TC: "06:01 (香港開)", EN: "06:01 (fr. Hong Kong)" }, last: { TC: "00:50 (往東涌)", EN: "00:50 (to Tung Chung)" } },
-                    DOWN: { first: { TC: "06:02 (東涌開)", EN: "06:02 (fr. Tung Chung)" }, last: { TC: "00:43 (往香港)", EN: "00:43 (to Hong Kong)" } }
-                },
-                stations: ["HOK","KOW","OLY","NAC","LAK","TSY","SUN","TUC"],
-                times: [3,3,2,3,3,7,6]
-            },
-            AEL: {
-                name: { TC: "機場快綫", EN: "Airport Express" },
-                colorName: { TC: "藍綠色", EN: "Teal" },
-                color: "#00888A",
-                schedule: {
-                    UP:   { first: { TC: "05:50 (香港開)", EN: "05:50 (fr. Hong Kong)" }, last: { TC: "00:48 (往博覽館)", EN: "00:48 (to AsiaWorld-Expo)" } },
-                    DOWN: { first: { TC: "05:54 (博覽館開)", EN: "05:54 (fr. AsiaWorld-Expo)" }, last: { TC: "00:45 (往香港)", EN: "00:45 (to Hong Kong)" } }
-                },
-                stations: ["HOK","KOW","TSY","AIR","AWE"],
-                times: [3,4,14,2]
-            },
-            DRL: {
-                name: { TC: "迪士尼綫", EN: "Disneyland Resort Line" },
-                colorName: { TC: "粉紅色", EN: "Pink" },
-                color: "#F173AC",
-                schedule: {
-                    UP:   { first: { TC: "06:15 (欣澳開)", EN: "06:15 (fr. Sunny Bay)" }, last: { TC: "00:45 (往迪士尼)", EN: "00:45 (to Disneyland)" } },
-                    DOWN: { first: { TC: "06:20 (迪士尼開)", EN: "06:20 (fr. Disneyland)" }, last: { TC: "00:40 (往欣澳)", EN: "00:40 (to Sunny Bay)" } }
-                },
-                stations: ["SUN","DIS"],
-                times: [4]
-            }
-        };
-
-        // Bilingual Station Dictionary
-        const STATION_NAMES = {
-            WKS:{TC:"烏溪沙",EN:"Wu Kai Sha"}, MOS:{TC:"馬鞍山",EN:"Ma On Shan"}, HEO:{TC:"恆安",EN:"Heng On"},
-            TSH:{TC:"大水坑",EN:"Tai Shui Hang"}, SHM:{TC:"石門",EN:"Shek Mun"}, CIO:{TC:"第一城",EN:"City One"},
-            STW:{TC:"沙田圍",EN:"Sha Tin Wai"}, CKT:{TC:"車公廟",EN:"Che Kung Temple"}, TAW:{TC:"大圍",EN:"Tai Wai"},
-            HIK:{TC:"顯徑",EN:"Hin Keng"}, DIH:{TC:"鑽石山",EN:"Diamond Hill"}, KAT:{TC:"啟德",EN:"Kai Tak"},
-            SUW:{TC:"宋皇臺",EN:"Sung Wong Toi"}, TKW:{TC:"土瓜灣",EN:"To Kwa Wan"}, HOM:{TC:"何文田",EN:"Ho Man Tin"},
-            HUH:{TC:"紅磡",EN:"Hung Hom"}, ETS:{TC:"尖東",EN:"East Tsim Sha Tsui"}, AUS:{TC:"柯士甸",EN:"Austin"},
-            NAC:{TC:"南昌",EN:"Nam Cheong"}, MEF:{TC:"美孚",EN:"Mei Foo"}, TWW:{TC:"荃灣西",EN:"Tsuen Wan West"},
-            KSR:{TC:"錦上路",EN:"Kam Sheung Road"}, YUL:{TC:"元朗",EN:"Yuen Long"}, LOP:{TC:"朗屏",EN:"Long Ping"},
-            TIS:{TC:"天水圍",EN:"Tin Shui Wai"}, SIH:{TC:"兆康",EN:"Siu Hong"}, TUM:{TC:"屯門",EN:"Tuen Mun"},
-            ADM:{TC:"金鐘",EN:"Admiralty"}, EXC:{TC:"會展",EN:"Exhibition Centre"}, MKK:{TC:"旺角東",EN:"Mong Kok East"},
-            KOT:{TC:"九龍塘",EN:"Kowloon Tong"}, SHT:{TC:"沙田",EN:"Sha Tin"}, FOT:{TC:"火炭",EN:"Fo Tan"},
-            RAC:{TC:"馬場",EN:"Racecourse"}, UNI:{TC:"大學",EN:"University"}, TAP:{TC:"大埔墟",EN:"Tai Po Market"},
-            TWO:{TC:"太和",EN:"Tai Wo"}, FAN:{TC:"粉嶺",EN:"Fanling"}, SHS:{TC:"上水",EN:"Sheung Shui"},
-            LOW:{TC:"羅湖",EN:"Lo Wu"}, LMC:{TC:"落馬洲",EN:"Lok Ma Chau"},
-            WHA:{TC:"黃埔",EN:"Whampoa"}, YMT:{TC:"油麻地",EN:"Yau Ma Tei"}, MOK:{TC:"旺角",EN:"Mong Kok"},
-            PRE:{TC:"太子",EN:"Prince Edward"}, SKM:{TC:"石硤尾",EN:"Shek Kip Mei"}, LOF:{TC:"樂富",EN:"Lok Fu"},
-            WTS:{TC:"黃大仙",EN:"Wong Tai Sin"}, CHH:{TC:"彩虹",EN:"Choi Hung"}, KOB:{TC:"九龍灣",EN:"Kowloon Bay"},
-            NTK:{TC:"牛頭角",EN:"Ngau Tau Kok"}, KWT:{TC:"觀塘",EN:"Kwun Tong"}, LAT:{TC:"藍田",EN:"Lam Tin"},
-            YAT:{TC:"油塘",EN:"Yau Tong"}, TIK:{TC:"調景嶺",EN:"Tiu Keng Leng"},
-            CEN:{TC:"中環",EN:"Central"}, TST:{TC:"尖沙咀",EN:"Tsim Sha Tsui"}, JOR:{TC:"佐敦",EN:"Jordan"},
-            SSP:{TC:"深水埗",EN:"Sham Shui Po"}, CSW:{TC:"長沙灣",EN:"Cheung Sha Wan"}, LCK:{TC:"荔枝角",EN:"Lai Chi Kok"},
-            LAK:{TC:"荔景",EN:"Lai King"}, TSY:{TC:"青衣",EN:"Tsing Yi"}, KWF:{TC:"葵芳",EN:"Kwai Fong"},
-            KWH:{TC:"葵興",EN:"Kwai Hing"}, TWH:{TC:"大窩口",EN:"Tai Wo Hau"}, TSW:{TC:"荃灣",EN:"Tsuen Wan"},
-            KET:{TC:"堅尼地城",EN:"Kennedy Town"}, HKU:{TC:"香港大學",EN:"HKU"}, SYP:{TC:"西營盤",EN:"Sai Ying Pun"},
-            SHW:{TC:"上環",EN:"Sheung Wan"}, WAC:{TC:"灣仔",EN:"Wan Chai"}, CAB:{TC:"銅鑼灣",EN:"Causeway Bay"},
-            TIH:{TC:"天后",EN:"Tin Hau"}, FOH:{TC:"炮台山",EN:"Fortress Hill"}, NOP:{TC:"北角",EN:"North Point"},
-            QUB:{TC:"鰂魚涌",EN:"Quarry Bay"}, TAK:{TC:"太古",EN:"Tai Koo"}, SWH:{TC:"西灣河",EN:"Sai Wan Ho"},
-            SKW:{TC:"筲箕灣",EN:"Shau Kei Wan"}, HFC:{TC:"杏花邨",EN:"Heng Fa Chuen"}, CHW:{TC:"柴灣",EN:"Chai Wan"},
-            OCP:{TC:"海洋公園",EN:"Ocean Park"}, WCH:{TC:"黃竹坑",EN:"Wong Chuk Hang"}, LET:{TC:"利東",EN:"Lei Tung"},
-            SOH:{TC:"海怡半島",EN:"South Horizons"},
-            TKO:{TC:"將軍澳",EN:"Tseung Kwan O"}, HAH:{TC:"坑口",EN:"Hang Hau"}, POA:{TC:"寶琳",EN:"Po Lam"},
-            LHP:{TC:"康城",EN:"LOHAS Park"},
-            HOK:{TC:"香港",EN:"Hong Kong"}, KOW:{TC:"九龍",EN:"Kowloon"}, OLY:{TC:"奧運",EN:"Olympic"},
-            SUN:{TC:"欣澳",EN:"Sunny Bay"}, TUC:{TC:"東涌",EN:"Tung Chung"},
-            AIR:{TC:"機場",EN:"Airport"}, AWE:{TC:"博覽館",EN:"AsiaWorld-Expo"},
-            DIS:{TC:"迪士尼",EN:"Disneyland Resort"}
-        };
-
-        const stName = (code) => STATION_NAMES[code] ? STATION_NAMES[code][currentLang] : code;
-        const lnName = (code) => LINES[code] ? LINES[code].name[currentLang] : code;
-
-        // Interchanges
-        const INTERCHANGES = [
-            ["TML","NAC", "TCL","NAC", 2],
-            ["TML","TAW", "EAL","TAW", 2],
-            ["TML","HUH", "EAL","HUH", 3],
-            ["TML","DIH", "KTL","DIH", 3],
-            ["TML","HOM", "KTL","HOM", 3],
-            ["TML","MEF", "TWL","MEF", 4],
-            ["TML","ETS", "TWL","TST", 6],
-            ["TCL","LAK", "TWL","LAK", 1],
-            ["TCL","HOK", "ISL","CEN", 5],
-            ["TCL","HOK", "TWL","CEN", 5],
-            ["TCL","SUN", "DRL","SUN", 2],
-            ["TCL","TSY", "AEL","TSY", 3],
-            ["TCL","KOW", "AEL","KOW", 3],
-            ["TCL","HOK", "AEL","HOK", 3],
-            ["EAL","ADM", "ISL","ADM", 2],
-            ["EAL","ADM", "TWL","ADM", 2],
-            ["EAL","ADM", "SIL","ADM", 3],
-            ["EAL","KOT", "KTL","KOT", 3],
-            ["ISL","ADM", "TWL","ADM", 1],
-            ["ISL","ADM", "SIL","ADM", 3],
-            ["ISL","CEN", "TWL","CEN", 2],
-            ["ISL","NOP", "TKL","NOP", 2],
-            ["ISL","QUB", "TKL","QUB", 3],
-            ["KTL","YAT", "TKL","YAT", 1],
-            ["KTL","TIK", "TKL","TIK", 1],
-            ["KTL","PRE", "TWL","PRE", 1],
-            ["KTL","MOK", "TWL","MOK", 1],
-            ["KTL","YMT", "TWL","YMT", 2]
-        ];
-
-        // Build Graph
-        const GRAPH = {};
-        function addEdge(u, v, cost, type, line, dir) {
-            if (!GRAPH[u]) GRAPH[u] = [];
-            GRAPH[u].push({ to: v, cost, type, line, dir });
-        }
-
-        Object.entries(LINES).forEach(([lineCode, info]) => {
-            const stas = info.stations;
-            for (let i = 0; i < stas.length - 1; i++) {
-                const u = `${lineCode}:${stas[i]}`;
-                const v = `${lineCode}:${stas[i+1]}`;
-                if (info.branchSplit === "SHS" && stas[i] === "LOW" && stas[i+1] === "LMC") continue;
-                if (info.branchSplit === "TKO" && stas[i] === "POA" && stas[i+1] === "LHP") continue;
-
-                const t = info.times[i] || 2;
-                addEdge(u, v, t, "RIDE", lineCode, "UP");
-                addEdge(v, u, t, "RIDE", lineCode, "DOWN");
-            }
-            if (info.branchSplit === "SHS") {
-                addEdge("EAL:SHS", "EAL:LMC", 5, "RIDE", "EAL", "UP");
-                addEdge("EAL:LMC", "EAL:SHS", 5, "RIDE", "EAL", "DOWN");
-            }
-            if (info.branchSplit === "TKO") {
-                addEdge("TKL:TKO", "TKL:LHP", 4, "RIDE", "TKL", "UP");
-                addEdge("TKL:LHP", "TKL:TKO", 4, "RIDE", "TKL", "DOWN");
-            }
-        });
-
-        INTERCHANGES.forEach(([l1, s1, l2, s2, walkMins]) => {
-            const u = `${l1}:${s1}`;
-            const v = `${l2}:${s2}`;
-            const penalty = walkMins + 6;
-            addEdge(u, v, penalty, "TRANSFER", l2, walkMins);
-            addEdge(v, u, penalty, "TRANSFER", l1, walkMins);
-        });
-
-        function findShortestPath(startNode, endNode) {
-            if (startNode === endNode) return [];
-            const [sLine, sSta] = startNode.split(":");
-            const [eLine, eSta] = endNode.split(":");
-
-            if (sLine === eLine) {
-                const lineInfo = LINES[sLine];
-                const sIdx = lineInfo.stations.indexOf(sSta);
-                const eIdx = lineInfo.stations.indexOf(eSta);
-                const isBranchConflict =
-                    (lineInfo.branch1 && lineInfo.branch2) &&
-                    ((lineInfo.branch1.includes(sSta) && lineInfo.branch2.includes(eSta)) ||
-                     (lineInfo.branch2.includes(sSta) && lineInfo.branch1.includes(eSta)));
-
-                if (!isBranchConflict && sIdx !== -1 && eIdx !== -1) {
-                    const dir = sIdx < eIdx ? "UP" : "DOWN";
-                    let mins = 0;
-                    const minI = Math.min(sIdx, eIdx);
-                    const maxI = Math.max(sIdx, eIdx);
-                    for (let i = minI; i < maxI; i++) mins += (lineInfo.times[i] || 2);
-                    return [{
-                        type: "RIDE", line: sLine, dir: dir,
-                        fromSta: sSta, toSta: eSta,
-                        stops: maxI - minI, mins: mins
-                    }];
-                }
-            }
-
-            const dist = {};
-            const prev = {};
-            const unvisited = new Set(Object.keys(GRAPH));
-
-            unvisited.forEach(node => dist[node] = Infinity);
-            dist[startNode] = 0;
-
-            while (unvisited.size > 0) {
-                let u = null;
-                let minD = Infinity;
-                unvisited.forEach(node => {
-                    if (dist[node] < minD) { minD = dist[node]; u = node; }
-                });
-                if (!u || u === endNode) break;
-                unvisited.delete(u);
-
-                (GRAPH[u] || []).forEach(edge => {
-                    if (!unvisited.has(edge.to)) return;
-                    const alt = dist[u] + edge.cost;
-                    if (alt < dist[edge.to]) {
-                        dist[edge.to] = alt;
-                        prev[edge.to] = { node: u, edge };
-                    }
-                });
-            }
-
-            const rawEdges = [];
-            let curr = endNode;
-            while (prev[curr]) {
-                rawEdges.unshift({ from: prev[curr].node, to: curr, ...prev[curr].edge });
-                curr = prev[curr].node;
-            }
-
-            const segments = [];
-            rawEdges.forEach(e => {
-                if (e.type === "TRANSFER") {
-                    segments.push({
-                        type: "TRANSFER",
-                        fromSta: e.from.split(":")[1],
-                        toSta: e.to.split(":")[1],
-                        toLine: e.line,
-                        walkMins: e.dir
-                    });
-                } else {
-                    const last = segments[segments.length - 1];
-                    if (last && last.type === "RIDE" && last.line === e.line && last.dir === e.dir) {
-                        last.toSta = e.to.split(":")[1];
-                        last.stops += 1;
-                        last.mins += e.cost;
-                    } else {
-                        segments.push({
-                            type: "RIDE",
-                            line: e.line,
-                            dir: e.dir,
-                            fromSta: e.from.split(":")[1],
-                            toSta: e.to.split(":")[1],
-                            stops: 1,
-                            mins: e.cost
-                        });
-                    }
-                }
-            });
-            return segments;
-        }
-
-        // Preset Routes Storage
-        const DEFAULT_PRESETS = [
-            { sLine: "TML", sSta: "CIO", eLine: "TML", eSta: "NAC" },
-            { sLine: "TML", sSta: "NAC", eLine: "TML", eSta: "CIO" },
-            { sLine: "TML", sSta: "CIO", eLine: "TCL", eSta: "TUC" },
-            { sLine: "TML", sSta: "CIO", eLine: "EAL", eSta: "ADM" }
-        ];
-
-        function getPresets() {
-            try {
-                const saved = localStorage.getItem("mtr_custom_presets_v2");
-                if (saved) return JSON.parse(saved);
-            } catch (e) {}
-            return DEFAULT_PRESETS;
-        }
-
-        function savePresets(list) {
-            try { localStorage.setItem("mtr_custom_presets_v2", JSON.stringify(list)); } catch (e) {}
-        }
-
-        function renderPresets() {
-            const list = getPresets();
-            const container = document.getElementById("presetList");
-            const curSLine = startLineSel.value;
-            const curSSta = startStaSel.value;
-            const curELine = endLineSel.value;
-            const curESta = endStaSel.value;
-
-            container.innerHTML = "";
-            list.forEach((p, idx) => {
-                const isActive = (p.sLine === curSLine && p.sSta === curSSta && p.eLine === curELine && p.eSta === curESta);
-                const chip = document.createElement("div");
-                chip.className = `preset-chip ${isActive ? 'active' : ''}`;
-
-                const textSpan = document.createElement("span");
-                textSpan.className = "preset-text";
-                textSpan.textContent = `${stName(p.sSta)} ➔ ${stName(p.eSta)}`;
-                textSpan.onclick = () => {
-                    startLineSel.value = p.sLine;
-                    populateStations(startLineSel, startStaSel, p.sSta);
-                    endLineSel.value = p.eLine;
-                    populateStations(endLineSel, endStaSel, p.eSta);
-                    renderPresets();
-                    updateDashboard();
-                };
-
-                const delSpan = document.createElement("span");
-                delSpan.className = "preset-del";
-                delSpan.textContent = "×";
-                delSpan.onclick = (e) => {
-                    e.stopPropagation();
-                    const updated = getPresets().filter((_, i) => i !== idx);
-                    savePresets(updated);
-                    renderPresets();
-                };
-
-                chip.appendChild(textSpan);
-                chip.appendChild(delSpan);
-                container.appendChild(chip);
-            });
-        }
-
-        const startLineSel = document.getElementById("startLine");
-        const startStaSel = document.getElementById("startSta");
-        const endLineSel = document.getElementById("endLine");
-        const endStaSel = document.getElementById("endSta");
-
-        function populateLines() {
-            const prevSLine = startLineSel.value || "TML";
-            const prevELine = endLineSel.value || "TML";
-            startLineSel.innerHTML = "";
-            endLineSel.innerHTML = "";
-
-            Object.entries(LINES).forEach(([code, info]) => {
-                const label = `${info.name[currentLang]} (${info.colorName[currentLang]})`;
-                startLineSel.add(new Option(label, code));
-                endLineSel.add(new Option(label, code));
-            });
-
-            startLineSel.value = prevSLine;
-            endLineSel.value = prevELine;
-        }
-
-        function populateStations(lineSelect, staSelect, defaultSta) {
-            const lineCode = lineSelect.value;
-            const prevSta = defaultSta || staSelect.value;
-            staSelect.innerHTML = "";
-            LINES[lineCode].stations.forEach(staCode => {
-                staSelect.add(new Option(stName(staCode), staCode));
-            });
-            if (prevSta && LINES[lineCode].stations.includes(prevSta)) {
-                staSelect.value = prevSta;
-            }
-        }
-
-        function updateStaticTexts() {
-            const t = I18N[currentLang];
-            document.documentElement.lang = currentLang === "EN" ? "en" : "zh-Hant-HK";
-            document.getElementById("uiTitle").textContent = t.title;
-            document.getElementById("langBtn").textContent = t.langBtn;
-
-            document.getElementById("uiPresetTitle").textContent = t.presetTitle;
-            document.getElementById("savePresetBtn").textContent = t.savePreset;
-            document.getElementById("uiOriginLabel").textContent = t.originLabel;
-            document.getElementById("uiDestLabel").textContent = t.destLabel;
-            document.getElementById("uiSwapText").textContent = t.swapText;
-            document.getElementById("uiFooterNote").textContent = t.footerNote;
-        }
-
-        function getTerminalLabel(lineCode, dir) {
-            const info = LINES[lineCode];
-            if (dir === "UP") {
-                if (lineCode === "EAL") return `${stName("LOW")} / ${stName("LMC")}`;
-                if (lineCode === "TKL") return `${stName("POA")} / ${stName("LHP")}`;
-                return stName(info.stations[info.stations.length - 1]);
-            } else {
-                return stName(info.stations[0]);
-            }
-        }
-
-        async function fetchSegmentTrains(seg, earliestCatchTime) {
-            const t = I18N[currentLang];
-            try {
-                const res = await fetch(`${API_URL}?line=${seg.line}&sta=${seg.fromSta}&lang=${currentLang}`);
-                const data = await res.json();
-                if (data.status !== 1) {
-                    return {
-                        html: `<div style="color:#ff9500;font-size:calc(12px * var(--font-scale, 1));">${t.sysUnavail}</div>`,
-                        arrivalAtSegEnd: null
-                    };
-                }
-
-                const staData = data.data && data.data[`${seg.line}-${seg.fromSta}`];
-                if (!staData) {
-                    return {
-                        html: `<div style="color:#ff9500;font-size:calc(12px * var(--font-scale, 1));">${t.sysUnavail}</div>`,
-                        arrivalAtSegEnd: null
-                    };
-                }
-
-                const trains = staData[seg.dir] || [];
-                if (!trains.length) {
-                    return {
-                        html: `<div style="color:#888;font-size:calc(12px * var(--font-scale, 1));">${t.noTrains}</div>`,
-                        arrivalAtSegEnd: null
-                    };
-                }
-
-                let recommendedMarked = false;
-                const lineStas = LINES[seg.line].stations;
-                const destIdx = lineStas.indexOf(seg.toSta);
-
-                const rowsHtml = trains.map(tr => {
-                    const destName = stName(tr.dest);
-                    const isDeparting = tr.ttnt === "0";
-                    const isArriving = tr.ttnt === "1";
-                    const isSoon = isDeparting || isArriving;
-                    const waitText = isDeparting ? t.departing : (isArriving ? t.arriving : `${tr.ttnt} ${t.mins}`);
-                    const depTimeStr = tr.time ? tr.time.split(" ")[1] : "";
-
-                    let etaStr = "";
-                    let catchBadge = "";
-                    let depDate = null;
-
-                    if (tr.time && tr.time.includes(" ")) {
-                        depDate = new Date(tr.time.replace(" ", "T"));
-                        if (!isNaN(depDate)) {
-                            const arrDate = new Date(depDate.getTime() + seg.mins * 60000);
-                            const hh = String(arrDate.getHours()).padStart(2, '0');
-                            const mm = String(arrDate.getMinutes()).padStart(2, '0');
-                            etaStr = `${t.arr} ${stName(seg.toSta)} ~${hh}:${mm}`;
-
-                            if (earliestCatchTime && !recommendedMarked && depDate >= earliestCatchTime) {
-                                catchBadge = `<span class="badge-catch">${t.catchThis}</span>`;
-                                recommendedMarked = true;
-                            }
-                        }
-                    }
-
-                    let warnBadge = "";
-                    const trEndIdx = lineStas.indexOf(tr.dest);
-                    if (trEndIdx !== -1 && destIdx !== -1) {
-                        if ((seg.dir === "UP" && trEndIdx < destIdx) || (seg.dir === "DOWN" && trEndIdx > destIdx)) {
-                            warnBadge = `<span class="badge-warn">${t.shortTurn(destName)}</span>`;
-                        }
-                    }
-
-                    return {
-                        depDate,
-                        html: `
-                            <div class="train-row">
-                                <div class="train-left">
-                                    <div class="train-dest">${t.toDest} ${destName} ${catchBadge} ${warnBadge}</div>
-                                    <div class="train-sub">${currentLang === 'TC' ? tr.plat + ' ' + t.plat : t.plat + ' ' + tr.plat} ｜ ${t.dep} ${depTimeStr}</div>
-                                </div>
-                                <div class="train-right">
-                                    <div class="ttnt-val ${isSoon ? 'ttnt-soon' : ''}">${waitText}</div>
-                                    <div class="eta-val">${etaStr}</div>
-                                </div>
-                            </div>
-                        `
-                    };
-                });
-
-                const firstValid = rowsHtml.find(r => !earliestCatchTime || (r.depDate && r.depDate >= earliestCatchTime)) || rowsHtml[0];
-                const arrivalAtSegEnd = firstValid && firstValid.depDate ? new Date(firstValid.depDate.getTime() + seg.mins * 60000) : null;
-
-                return {
-                    html: rowsHtml.map(r => r.html).join(""),
-                    arrivalAtSegEnd
-                };
-            } catch (e) {
-                return { html: `<div style="color:#ff3b30;font-size:calc(12px * var(--font-scale, 1));">${t.connErr}</div>`, arrivalAtSegEnd: null };
-            }
-        }
-
-        let currentRequestId = 0;
-        let lastRenderedKey = "";
-
-        async function updateDashboard(isAutoRefresh = false) {
-            const reqId = ++currentRequestId;
-            const t = I18N[currentLang];
-            const startNode = `${startLineSel.value}:${startStaSel.value}`;
-            const endNode = `${endLineSel.value}:${endStaSel.value}`;
-            const renderKey = `${currentLang}|${startNode}|${endNode}`;
-            const container = document.getElementById("itineraryContainer");
-
-            if (!isAutoRefresh) {
-                renderPresets();
-            }
-
-            if (startNode === endNode) {
-                lastRenderedKey = renderKey;
-                document.getElementById("summaryBar").innerHTML = `<span style="color:#ff3b30;width:100%;">${t.sameStation}</span>`;
-                container.innerHTML = "";
-                return;
-            }
-
-            const segments = findShortestPath(startNode, endNode);
-            const canSilentUpdate = isAutoRefresh && (lastRenderedKey === renderKey) && container.children.length > 0;
-
-            if (!canSilentUpdate) {
-                lastRenderedKey = renderKey;
-                let totalStops = 0;
-                let totalMins = 0;
-                let transferCount = 0;
-
-                segments.forEach(s => {
-                    if (s.type === "RIDE") {
-                        totalStops += s.stops;
-                        totalMins += s.mins;
-                    } else {
-                        totalMins += s.walkMins;
-                        transferCount += 1;
-                    }
-                });
-
-                document.getElementById("summaryBar").innerHTML = `
-                    <span>${t.totalPrefix}${totalStops} ${t.stopsUnit}</span>
-                    <span>${transferCount === 0 ? t.directText : t.transferText(transferCount)}</span>
-                    <span>${t.estTime(totalMins)}</span>
-                `;
-
-                container.innerHTML = segments.map((seg, idx) => {
-                    if (seg.type === "TRANSFER") {
-                        const staDisplay = seg.fromSta === seg.toSta ? stName(seg.fromSta) : `${stName(seg.fromSta)} ➔ ${stName(seg.toSta)}`;
-                        return `
-                            <div class="transfer-divider">
-                                <div class="transfer-pill">${t.transferWalk(staDisplay, lnName(seg.toLine), seg.walkMins)}</div>
-                            </div>
-                        `;
-                    } else {
-                        const lineInfo = LINES[seg.line];
-                        const termName = getTerminalLabel(seg.line, seg.dir);
-                        const staFirstTime = getStationFirstTrain(seg.line, seg.dir, seg.fromSta);
-                        const staLastTime = getStationLastTrain(seg.line, seg.dir, seg.fromSta);
-                        const termShort = getTerminalLabel(seg.line, seg.dir);
-                        const firstDisplay = `${staFirstTime} (${t.towards}${termShort})`;
-                        const lastDisplay = (seg.line === "EAL" && seg.dir === "UP") || (seg.line === "TKL" && seg.dir === "UP")
-                            ? staLastTime
-                            : `${staLastTime} (${t.towards}${termShort})`;
-
-                        return `
-                            <div class="card">
-                                <div class="seg-header">
-                                    <div class="seg-title">${stName(seg.fromSta)} ➔ ${stName(seg.toSta)}</div>
-                                    <div class="line-pill" style="background:${lineInfo.color};">${lnName(seg.line)}・${t.towards}${termName}</div>
-                                </div>
-                                <div class="first-last-box">
-                                    <div class="fl-item">
-                                        <div class="fl-label">${t.firstTrain(stName(seg.fromSta))}</div>
-                                        <div class="fl-val first">${firstDisplay}</div>
-                                    </div>
-                                    <div class="fl-item" style="text-align:right;">
-                                        <div class="fl-label">${t.lastTrain(stName(seg.fromSta))}</div>
-                                        <div class="fl-val last">${lastDisplay}</div>
-                                    </div>
-                                </div>
-                                <div id="seg-body-${idx}"><div style="color:#888;font-size:calc(12px * var(--font-scale, 1));">${t.loading}</div></div>
-                            </div>
-                        `;
-                    }
-                }).join("");
-            }
-
-            let rollingArrivalTime = null;
-            for (let i = 0; i < segments.length; i++) {
-                if (reqId !== currentRequestId) return;
-                const seg = segments[i];
-                if (seg.type === "TRANSFER") {
-                    if (rollingArrivalTime) {
-                        rollingArrivalTime = new Date(rollingArrivalTime.getTime() + seg.walkMins * 60000);
-                    }
-                } else {
-                    const result = await fetchSegmentTrains(seg, rollingArrivalTime);
-                    if (reqId !== currentRequestId) return;
-                    const bodyEl = document.getElementById(`seg-body-${i}`);
-                    if (bodyEl && bodyEl.innerHTML !== result.html) {
-                        bodyEl.innerHTML = result.html;
-                    }
-                    rollingArrivalTime = result.arrivalAtSegEnd;
-                }
-            }
-
-            if (reqId === currentRequestId) {
-                const now = new Date();
-                const hh = String(now.getHours()).padStart(2, '0');
-                const mm = String(now.getMinutes()).padStart(2, '0');
-                const ss = String(now.getSeconds()).padStart(2, '0');
-                document.getElementById("lastUpdate").textContent = `${t.lastUpdate}${hh}:${mm}:${ss}`;
-            }
-        }
-
-        // Event Listeners
-        startLineSel.addEventListener("change", () => {
-            populateStations(startLineSel, startStaSel);
-            updateDashboard();
-        });
-        startStaSel.addEventListener("change", updateDashboard);
-
-        endLineSel.addEventListener("change", () => {
-            populateStations(endLineSel, endStaSel);
-            updateDashboard();
-        });
-        endStaSel.addEventListener("change", updateDashboard);
-
-        document.getElementById("swapBtn").addEventListener("click", () => {
-            const tmpL = startLineSel.value;
-            const tmpS = startStaSel.value;
-            startLineSel.value = endLineSel.value;
-            populateStations(startLineSel, startStaSel, endStaSel.value);
-            endLineSel.value = tmpL;
-            populateStations(endLineSel, endStaSel, tmpS);
-            updateDashboard();
-        });
-
-        document.getElementById("savePresetBtn").addEventListener("click", () => {
-            const t = I18N[currentLang];
-            const sLine = startLineSel.value;
-            const sSta = startStaSel.value;
-            const eLine = endLineSel.value;
-            const eSta = endStaSel.value;
-            if (sLine === eLine && sSta === eSta) return;
-
-            const list = getPresets();
-            const exists = list.some(p => p.sLine === sLine && p.sSta === sSta && p.eLine === eLine && p.eSta === eSta);
-            if (exists) {
-                alert(t.existMsg);
-                return;
-            }
-            list.push({ sLine, sSta, eLine, eSta });
-            savePresets(list);
-            renderPresets();
-            alert(t.savedMsg);
-        });
-
-        document.getElementById("langBtn").addEventListener("click", () => {
-            currentLang = currentLang === "TC" ? "EN" : "TC";
-            try { localStorage.setItem("mtr_preferred_lang", currentLang); } catch (e) {}
-            updateStaticTexts();
-            populateLines();
-            populateStations(startLineSel, startStaSel, startStaSel.value);
-            populateStations(endLineSel, endStaSel, endStaSel.value);
-            updateDashboard();
-        });
-
-        
-        // Font Scale Slider Persistence & Smooth Control
-        const fontSlider = document.getElementById("fontSlider");
-        let savedFontScale = "1";
-        try {
-            const s = localStorage.getItem("mtr_font_scale");
-            if (s && !isNaN(parseFloat(s))) {
-                savedFontScale = s;
-            }
-        } catch (e) {}
-
-        function applyFontSlider(val) {
-            const num = Math.max(0.9, Math.min(1.45, parseFloat(val) || 1));
-            const scaleStr = num.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
-            document.documentElement.style.setProperty("--font-scale", scaleStr);
-            if (fontSlider) {
-                fontSlider.value = scaleStr;
-                const pct = ((num - 0.9) / (1.45 - 0.9)) * 100;
-                fontSlider.style.background = `linear-gradient(to right, #ffffff 0%, #ffffff ${pct}%, rgba(255,255,255,0.25) ${pct}%, rgba(255,255,255,0.25) 100%)`;
-            }
-            try { localStorage.setItem("mtr_font_scale", scaleStr); } catch (e) {}
-        }
-
-        if (fontSlider) {
-            fontSlider.addEventListener("input", (e) => {
-                applyFontSlider(e.target.value);
-            });
-        }
-        applyFontSlider(savedFontScale);
-
-        // Init (Default: City One -> Nam Cheong)
-        updateStaticTexts();
-        populateLines();
-        startLineSel.value = "TML";
-        populateStations(startLineSel, startStaSel, "CIO");
-        endLineSel.value = "TML";
-        populateStations(endLineSel, endStaSel, "NAC");
-
-        updateDashboard(false);
-        setInterval(() => updateDashboard(true), 10000);
-    </script>
+        return `
+          <tr class="${rowBg} hover:bg-amber-50/40 transition-colors">
+            ${timeCellsHtml}
+            ${renderGenderCells('girls')}
+            ${renderGenderCells('boys')}
+            ${timeCellsHtml}
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 10. INITIALIZE APPLICATION ON LOAD
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      onEventTypeOrTimeChange();
+      renderAll();
+    });
+  </script>
 </body>
 </html>
